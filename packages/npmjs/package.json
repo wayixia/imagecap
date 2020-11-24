@@ -1,0 +1,24 @@
+{
+  "name": "imagecap",
+  "version": "1.0.0",
+  "description": "Simple wrapper screen image capture with toolbar",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wayixia/imagecap.git"
+  },
+  "keywords": [
+    "Image",
+    "Screen",
+    "Capture"
+  ],
+  "author": "wayixia",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wayixia/imagecap/issues"
+  },
+  "homepage": "https://github.com/wayixia/imagecap#readme"
+}
