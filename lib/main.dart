@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'mainframe.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -30,7 +32,8 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      //home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MainFrame(),
     );
   }
 }
@@ -126,6 +129,7 @@ class HighlightListView extends StatefulWidget {
 
 class _HighlightListViewState extends State<HighlightListView> {
   int? _highlightedIndex;
+  int? _selectedIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -133,15 +137,20 @@ class _HighlightListViewState extends State<HighlightListView> {
       itemCount: widget.items.length,
       itemBuilder: (context, index) {
         bool isHighlighted = _highlightedIndex == index;
+        bool isSelected = _selectedIndex == index;
         return MouseRegion(
           onEnter: (event) => _highlight(index),
           onExit: (event) => _highlight(null),
           child: ListTile(
             title: Text(widget.items[index]),
-            selected: isHighlighted, // 使用selected属性来显示高亮效果
-            selectedColor: Colors.blue[100], // 高亮颜色
+            selected: isSelected, // 使用selected属性来显示高亮效果
+            selectedColor: Colors.white, // 高亮颜色
+            selectedTileColor: Colors.green, // 选中颜色
+            trailing: Icon(Icons.star, color: (isHighlighted||isSelected) ?Colors.white:Colors.grey),
             onTap: () {
               // 处理点击事件
+              _selectedIndex = index;
+              setState(() {});
             },
           ),
         );
@@ -155,3 +164,6 @@ class _HighlightListViewState extends State<HighlightListView> {
     });
   }
 }
+
+
+
