@@ -70,10 +70,19 @@ class _MainFrameState extends State<MainFrame> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Container(color: Colors.blue, 
+                  Container(color: Colors.white, 
                     height: 50, 
                     width: double.infinity,
-                    child:  Text('selectedIndex: $_selectedIndex, Label type: ${labelType.name}')
+                    alignment: Alignment.centerLeft,
+                    
+                    child:  
+                      Text('  > selectedIndex: $_selectedIndex', 
+                        style: 
+                          TextStyle(color: Colors.black87, 
+                            fontSize: 20, 
+                            fontWeight: FontWeight.w300
+                          ),
+                      )
                   ),
                   Expanded(child: Container(color: Colors.amber, width: double.infinity)),
                  
