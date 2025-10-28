@@ -1,4 +1,7 @@
+import 'dart:nativewrappers/_internal/vm/lib/ffi_native_type_patch.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class MainFrame extends StatefulWidget {
   const MainFrame({super.key});
@@ -9,7 +12,7 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   int _selectedIndex = 0;
-  NavigationRailLabelType labelType = NavigationRailLabelType.all;
+  NavigationRailLabelType labelType = NavigationRailLabelType.none;
   bool showLeading = false;
   bool showTrailing = false;
   double groupAlignment = -1.0;
@@ -53,7 +56,14 @@ class _MainFrameState extends State<MainFrame> {
                   label: Text('ColorPicker'),
                 ),
                 NavigationRailDestination(
-                  icon: Badge(child: Icon(Icons.bookmark_border)),
+                  //icon: Badge(child: Icon(Icons.bookmark_border)),
+                  icon: Badge(child: 
+                    const SvgPicture({}).asset( 'assets/images/svg/capture.svg',
+                      width: 24,
+                      height: 24,
+                      colorFilter: ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+                    ),
+                  ),
                   selectedIcon: Badge(child: Icon(Icons.book)),
                   label: Text('ScreenCaptrue'),
                 ),
