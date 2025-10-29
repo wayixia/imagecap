@@ -1,4 +1,3 @@
-import 'dart:nativewrappers/_internal/vm/lib/ffi_native_type_patch.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -12,7 +11,7 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   int _selectedIndex = 0;
-  NavigationRailLabelType labelType = NavigationRailLabelType.none;
+  NavigationRailLabelType labelType = NavigationRailLabelType.all;
   bool showLeading = false;
   bool showTrailing = false;
   double groupAlignment = -1.0;
@@ -49,8 +48,8 @@ class _MainFrameState extends State<MainFrame> {
                       icon: const Icon(Icons.more_horiz_rounded),
                     )
                   : const SizedBox(),
-              destinations: const <NavigationRailDestination>[
-                NavigationRailDestination(
+              destinations: <NavigationRailDestination>[
+                const NavigationRailDestination(
                   icon: Icon(Icons.favorite_border),
                   selectedIcon: Icon(Icons.favorite),
                   label: Text('ColorPicker'),
@@ -58,16 +57,14 @@ class _MainFrameState extends State<MainFrame> {
                 NavigationRailDestination(
                   //icon: Badge(child: Icon(Icons.bookmark_border)),
                   icon: Badge(child: 
-                    const SvgPicture({}).asset( 'assets/images/svg/capture.svg',
-                      width: 24,
-                      height: 24,
-                      colorFilter: ColorFilter.mode(Colors.grey, BlendMode.srcIn),
-                    ),
+                    //Icon(Icons.bookmark_border)
+                    //SvgPicture.asset('icons/heart.svg', package: 'my_icons')
+                    SvgPicture.asset( 'assets/images/svg/capture.svg', width:30, height:30)
                   ),
-                  selectedIcon: Badge(child: Icon(Icons.book)),
-                  label: Text('ScreenCaptrue'),
+                  selectedIcon: const Badge(child: Icon(Icons.book)),
+                  label: const Text('ScreenCaptrue'),
                 ),
-                NavigationRailDestination(
+                const NavigationRailDestination(
                   icon: Badge(label: Text('4'), child: Icon(Icons.settings_outlined)),
                   selectedIcon: Badge(label: Text('4'), child: Icon(Icons.settings)),
                   label: Text('Settings'),
