@@ -15,6 +15,7 @@ class _MainFrameState extends State<MainFrame> {
   bool showLeading = false;
   bool showTrailing = false;
   double groupAlignment = -1.0;
+  String _selectedTitle = 'ColorPicker';
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +29,8 @@ class _MainFrameState extends State<MainFrame> {
               onDestinationSelected: (int index) {
                 setState(() {
                   _selectedIndex = index;
+                  //_selectedTitle = widget
+                  
                 });
               },
               labelType: labelType,
