@@ -49,19 +49,26 @@ class _MainFrameState extends State<MainFrame> {
                     )
                   : const SizedBox(),
               destinations: <NavigationRailDestination>[
-                const NavigationRailDestination(
-                  icon: Icon(Icons.favorite_border),
-                  selectedIcon: Icon(Icons.favorite),
-                  label: Text('ColorPicker'),
+                NavigationRailDestination(
+                  // icon: Badge( child: 
+                  //   SvgPicture.asset( 'assets/images/svg/colorpicker.svg', width:30, height:30)
+                  //   ),
+                  // ignore: deprecated_member_use
+                  icon: SvgPicture.asset( 'assets/images/svg/colorpicker.svg', width:26, height:26, color: Colors.black,),
+                  // Badge(child: 
+                  //   Icon(Icons.bookmark_border)
+                  // ),
+                  //selectedIcon: const Icon(Icons.favorite),
+                  // ignore: deprecated_member_use
+                  selectedIcon: SvgPicture.asset( 'assets/images/svg/colorpicker.svg', width:26, height:26, color: Colors.grey[800],),
+                  label: const Text('ColorPicker'),
+                  
                 ),
                 NavigationRailDestination(
                   //icon: Badge(child: Icon(Icons.bookmark_border)),
-                  icon: Badge(child: 
-                    //Icon(Icons.bookmark_border)
-                    //SvgPicture.asset('icons/heart.svg', package: 'my_icons')
-                    SvgPicture.asset( 'assets/images/svg/capture.svg', width:30, height:30)
-                  ),
-                  selectedIcon: const Badge(child: Icon(Icons.book)),
+                  icon: SvgPicture.asset( 'assets/images/svg/capture.svg', width:30, height:30),
+                  //selectedIcon: const Badge(child: Icon(Icons.book)),
+                  selectedIcon: SvgPicture.asset( 'assets/images/svg/capture.svg', width:30, height:30, color: Colors.grey[800],),
                   label: const Text('ScreenCaptrue'),
                 ),
                 const NavigationRailDestination(
@@ -77,21 +84,50 @@ class _MainFrameState extends State<MainFrame> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Container(color: Colors.white, 
+                  Container(
+                    decoration: BoxDecoration( 
+                      color: Colors.white,
+                      border: Border( 
+                        bottom: BorderSide( 
+                          color: Color.fromARGB(0xff, 0xEE, 0xEE, 0xEE), // 底部边框颜色 
+                          width: 1.0, // 底部边框宽度
+                        ),),),
                     height: 50, 
                     width: double.infinity,
                     alignment: Alignment.centerLeft,
                     
-                    child:  
-                      Text('  > selectedIndex: $_selectedIndex', 
+                    child:  Row(children: [
+                       Text('  > selectedIndex: $_selectedIndex', 
                         style: 
                           TextStyle(color: Colors.black87, 
                             fontSize: 20, 
                             fontWeight: FontWeight.w300
                           ),
-                      )
+                      ),
+                      Spacer(),
+                      SizedBox( 
+                        width: 70,
+                        height: 40,
+                        child: FloatingActionButton( 
+                          //onPressed: _incrementCounter, 
+                          tooltip: 'Increment', 
+                          onPressed: () {  },
+                          mini: true, 
+                          elevation: 1, 
+                          backgroundColor: Colors.amber, 
+                          hoverElevation: 1, 
+                          // hoverColor: Color.fromARGB(0xFF, 0xF1, 0xF1, 0xF1), 
+                          focusElevation: 1, 
+                          // splashColor: Colors.transparent,
+                          highlightElevation: 1, // 将阴影高度设置为0
+                          child: const Icon(Icons.add),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                    ],)
+                     
                   ),
-                  Expanded(child: Container(color: Colors.amber, width: double.infinity)),
+                  Expanded(child: Container(color: Colors.white, width: double.infinity,)),
                  
                   // const SizedBox(height: 10),
                   // SegmentedButton<NavigationRailLabelType>(
