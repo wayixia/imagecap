@@ -2,6 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
+
+
+
+
 class MainFrame extends StatefulWidget {
   const MainFrame({super.key});
 
@@ -11,11 +15,40 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   int _selectedIndex = 0;
-  NavigationRailLabelType labelType = NavigationRailLabelType.all;
+  NavigationRailLabelType labelType = NavigationRailLabelType.none;
   bool showLeading = false;
   bool showTrailing = false;
   double groupAlignment = -1.0;
   String _selectedTitle = 'ColorPicker';
+  late final List<NavigationRailDestination> _destinations;
+
+  @override
+  void initState() {
+    super.initState();
+    _destinations = generateDestination();
+  }
+
+  List<NavigationRailDestination> generateDestination() {
+    return <NavigationRailDestination>[ 
+      NavigationRailDestination( 
+        // ignore: deprecated_member_use 
+        icon: SvgPicture.asset( 'assets/images/svg/colorpicker.svg', width:26, height:26, color: Colors.black,),
+        // ignore: deprecated_member_use
+        selectedIcon: SvgPicture.asset( 'assets/images/svg/colorpicker.svg', width:26, height:26, color: Colors.grey[800],),
+        label: const Text('ColorPicker'),
+      ),
+      NavigationRailDestination(
+        icon: SvgPicture.asset( 'assets/images/svg/capture.svg', width:26, height:26),
+        selectedIcon: SvgPicture.asset( 'assets/images/svg/capture.svg', width:26, height:26, color: Colors.grey[800],),
+        label: const Text('ScreenCaptrue'),
+      ),
+      const NavigationRailDestination(
+        icon: Badge(label: Text('4'), child: Icon(Icons.settings_outlined)),
+        selectedIcon: Badge(label: Text('4'), child: Icon(Icons.settings)),
+        label: Text('Settings'),
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +57,15 @@ class _MainFrameState extends State<MainFrame> {
         child: Row(
           children: <Widget>[
             NavigationRail(
+              minWidth: 60,
+              
               selectedIndex: _selectedIndex,
               groupAlignment: groupAlignment,
               onDestinationSelected: (int index) {
+                Text t = _destinations[index].label as Text;
                 setState(() {
                   _selectedIndex = index;
-                  //_selectedTitle = widget
-                  
+                  _selectedTitle = t.data??'';
                 });
               },
               labelType: labelType,
@@ -51,35 +86,7 @@ class _MainFrameState extends State<MainFrame> {
                       icon: const Icon(Icons.more_horiz_rounded),
                     )
                   : const SizedBox(),
-              destinations: <NavigationRailDestination>[
-                NavigationRailDestination(
-                  // icon: Badge( child: 
-                  //   SvgPicture.asset( 'assets/images/svg/colorpicker.svg', width:30, height:30)
-                  //   ),
-                  // ignore: deprecated_member_use
-                  icon: SvgPicture.asset( 'assets/images/svg/colorpicker.svg', width:26, height:26, color: Colors.black,),
-                  // Badge(child: 
-                  //   Icon(Icons.bookmark_border)
-                  // ),
-                  //selectedIcon: const Icon(Icons.favorite),
-                  // ignore: deprecated_member_use
-                  selectedIcon: SvgPicture.asset( 'assets/images/svg/colorpicker.svg', width:26, height:26, color: Colors.grey[800],),
-                  label: const Text('ColorPicker'),
-                  
-                ),
-                NavigationRailDestination(
-                  //icon: Badge(child: Icon(Icons.bookmark_border)),
-                  icon: SvgPicture.asset( 'assets/images/svg/capture.svg', width:30, height:30),
-                  //selectedIcon: const Badge(child: Icon(Icons.book)),
-                  selectedIcon: SvgPicture.asset( 'assets/images/svg/capture.svg', width:30, height:30, color: Colors.grey[800],),
-                  label: const Text('ScreenCaptrue'),
-                ),
-                const NavigationRailDestination(
-                  icon: Badge(label: Text('4'), child: Icon(Icons.settings_outlined)),
-                  selectedIcon: Badge(label: Text('4'), child: Icon(Icons.settings)),
-                  label: Text('Settings'),
-                ),
-              ],
+              destinations: _destinations,
             ),
             const VerticalDivider(thickness: 1, width: 1),
             // This is the main content.
@@ -100,21 +107,32 @@ class _MainFrameState extends State<MainFrame> {
                     alignment: Alignment.centerLeft,
                     
                     child:  Row(children: [
-                       Text('  > selectedIndex: $_selectedIndex', 
+                       Text('  > $_selectedTitle', 
                         style: 
                           TextStyle(color: Colors.black87, 
-                            fontSize: 20, 
-                            fontWeight: FontWeight.w300
+                            fontSize: 15, 
+                            fontWeight: FontWeight.w500
                           ),
                       ),
                       Spacer(),
                       SizedBox( 
                         width: 70,
-                        height: 40,
+                        height: 36,
                         child: FloatingActionButton( 
                           //onPressed: _incrementCounter, 
                           tooltip: 'Increment', 
-                          onPressed: () {  },
+                          onPressed: () { 
+                            // Add your onPressed code here!
+                            if( _selectedIndex == 0 ) {
+                              print('ColorPicker Add');
+
+                            } else if( _selectedIndex == 1 ) {
+                              print('ScreenCaptrue Add');
+                              doCaptureScreen();
+                            } else if( _selectedIndex == 2 ) {
+                              print('Settings Add');
+                            }
+                          },
                           mini: true, 
                           elevation: 1, 
                           backgroundColor: Colors.amber, 
@@ -197,5 +215,9 @@ class _MainFrameState extends State<MainFrame> {
         ),
       ),
     );
+  }
+  
+  void doCaptureScreen() {
+
   }
 }
