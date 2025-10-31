@@ -1,10 +1,30 @@
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 
 import 'mainframe.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main(List<String> args) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Get the current window controller
+  //final windowController = await WindowController.fromCurrentEngine();
+  
+  // Parse window arguments to determine which window to show
+  //final arguments = parseArguments(windowController.arguments);
+  
+  // Run different apps based on the window type
+  // switch (arguments.type) {
+  //   case YourArgumentDefinitions.main:
+      runApp(const MyApp());
+  //   case YourArgumentDefinitions.sample:
+  //     runApp(const SampleWindow());
+  //   // Add more window types as needed
+  // }
 }
+
+// void main() {
+//   runApp(const MyApp());
+// }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
