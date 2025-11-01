@@ -5,6 +5,43 @@
 	<key>logFormatVersion</key>
 	<integer>11</integer>
 	<key>logs</key>
-	<dict/>
+	<dict>
+		<key>80318B60-CC7B-45C7-9FA6-3DBD4997AC85</key>
+		<dict>
+			<key>className</key>
+			<string>IDESchemeActionsInvocationRecord</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>com.apple.dt.IDE.AttachSchemeAction</string>
+			<key>fileName</key>
+			<string>Run-2025.11.01_22-24-41-+0800.xcresult</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>signature</key>
+			<string>Run</string>
+			<key>timeStartedRecording</key>
+			<real>783699881.86869097</real>
+			<key>timeStoppedRecording</key>
+			<real>783700649.28048694</real>
+			<key>title</key>
+			<string>Run</string>
+			<key>uniqueIdentifier</key>
+			<string>80318B60-CC7B-45C7-9FA6-3DBD4997AC85</string>
+		</dict>
+	</dict>
 </dict>
 </plist>
