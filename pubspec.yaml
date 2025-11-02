@@ -41,6 +41,7 @@ dependencies:
     path: ./plugins/desktop_multi_window
   flutter_drawing_board:
     path: ./plugins/flutter_drawing_board
+  #image: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,7 @@ flutter:
   assets:
      - assets/images/svg/capture.svg
      - assets/images/svg/colorpicker.svg
+     - assets/images/capture.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
