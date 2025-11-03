@@ -343,10 +343,6 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   Offset? _startPoint;
   bool _isSelecting = false;
   
-  // 图片信息
-  final String imageUrl =
-      'https://fastly.picsum.photos/id/658/800/600.jpg?hmac=SMvl4-C3gJJUQ3C38MK0sGBnKcWdTZmooGG5FoL9l24'; // 替换为你的图片URL
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -378,41 +374,36 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           ),
           
           // 选区信息显示
-          if (_selectionRect != null)
-            Container(
-              padding: const EdgeInsets.all(8),
-              color: Colors.blue[50],
-              child: Text(
-                '选区信息: ${_selectionRect!.topLeft.dx.toStringAsFixed(1)}, '
-                '${_selectionRect!.topLeft.dy.toStringAsFixed(1)} - '
-                '${_selectionRect!.bottomRight.dx.toStringAsFixed(1)}, '
-                '${_selectionRect!.bottomRight.dy.toStringAsFixed(1)} '
-                '大小: ${_selectionRect!.width.toStringAsFixed(1)}×${_selectionRect!.height.toStringAsFixed(1)}',
-                textAlign: TextAlign.center,
-              ),
-            ),
+          //if (_selectionRect != null)
+            // Container(
+            //   padding: const EdgeInsets.all(8),
+            //   color: Colors.blue[50],
+            //   child: Text(
+            //     '选区信息: ${_selectionRect!.topLeft.dx.toStringAsFixed(1)}, '
+            //     '${_selectionRect!.topLeft.dy.toStringAsFixed(1)} - '
+            //     '${_selectionRect!.bottomRight.dx.toStringAsFixed(1)}, '
+            //     '${_selectionRect!.bottomRight.dy.toStringAsFixed(1)} '
+            //     '大小: ${_selectionRect!.width.toStringAsFixed(1)}×${_selectionRect!.height.toStringAsFixed(1)}',
+            //     textAlign: TextAlign.center,
+            //   ),
+            // ),
           
           // 图片和选区区域
           Expanded(
-            child: Center(
-              child: InteractiveViewer(
-                transformationController: _transformationController,
-                boundaryMargin: const EdgeInsets.all(20),
-                minScale: 0.1,
-                maxScale: 4.0,
+            // child: Center(
+            //   child: InteractiveViewer(
+            //     transformationController: _transformationController,
+            //     boundaryMargin: const EdgeInsets.all(20),
+            //     minScale: 0.1,
+            //     maxScale: 4.0,
                 child: Stack(
                   children: [
                     // 图片
                     Image.asset("assets/images/capture.png",
                       key: _imageKey,
-                      fit: BoxFit.contain,
+                      fit: BoxFit.none,
                     ),
-                    // Image.network(
-                    //   imageUrl,
-                    //   key: _imageKey,
-                    //   fit: BoxFit.contain,
-                    // ),
-                    
+
                     // 选区覆盖层
                     Positioned.fill(
                       child: Listener(
@@ -429,8 +420,8 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                     ),
                   ],
                 ),
-              ),
-            ),
+              //),
+            //),
           ),
           
           // 操作按钮
