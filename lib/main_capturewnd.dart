@@ -146,186 +146,6 @@ class _HighlightListViewState extends State<HighlightListView> {
   }
 }
 
-class RectangleSelectionDemo extends StatefulWidget {
-  @override
-  _RectangleSelectionDemoState createState() => _RectangleSelectionDemoState();
-}
-
-class _RectangleSelectionDemoState extends State<RectangleSelectionDemo> {
-  // 选区状态
-  Offset? _selectionStart;
-  Offset? _selectionEnd;
-  bool _isSelecting = false;
-  
-  // 被选中的项目
-  Set<int> _selectedItems = {};
-
-  // 清除选区
-  void _clearSelection() {
-    setState(() {
-      _selectionStart = null;
-      _selectionEnd = null;
-      _isSelecting = false;
-      _selectedItems.clear();
-    });
-  }
-
-  // 获取选区矩形
-  Rect? get _selectionRect {
-    if (_selectionStart == null || _selectionEnd == null) return null;
-    return Rect.fromPoints(_selectionStart!, _selectionEnd!);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('矩形选区示例'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.clear),
-            onPressed: _clearSelection,
-            tooltip: '清除选区',
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          // 内容网格
-          _buildContentGrid(),
-          
-          // 选区覆盖层
-          _buildSelectionOverlay(),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          print('选中项目: $_selectedItems');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('已选中 ${_selectedItems.length} 个项目')),
-          );
-        },
-        child: Icon(Icons.check),
-      ),
-    );
-  }
-
-  // 构建内容网格
-  Widget _buildContentGrid() {
-    return GridView.builder(
-      padding: EdgeInsets.all(16),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 5,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 1,
-      ),
-      itemCount: 50,
-      itemBuilder: (context, index) {
-        final isSelected = _selectedItems.contains(index);
-        return Container(
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.blue.withOpacity(0.7) : Colors.grey[300],
-            borderRadius: BorderRadius.circular(8),
-            border: isSelected 
-                ? Border.all(color: Colors.blue, width: 2)
-                : null,
-          ),
-          child: Center(
-            child: Text(
-              '$index',
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // 构建选区覆盖层
-  Widget _buildSelectionOverlay() {
-    return Positioned.fill(
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onPanStart: _onPanStart,
-        onPanUpdate: _onPanUpdate,
-        onPanEnd: _onPanEnd,
-        child: CustomPaint(
-          painter: _SelectionPainter(
-            selectionRect: _selectionRect,
-            isSelecting: _isSelecting,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // 手势开始
-  void _onPanStart(DragStartDetails details) {
-    setState(() {
-      _selectionStart = details.localPosition;
-      _selectionEnd = details.localPosition;
-      _isSelecting = true;
-    });
-  }
-
-  // 手势更新
-  void _onPanUpdate(DragUpdateDetails details) {
-    setState(() {
-      _selectionEnd = details.localPosition;
-      _updateSelectedItems();
-    });
-  }
-
-  // 手势结束
-  void _onPanEnd(DragEndDetails details) {
-    setState(() {
-      _isSelecting = false;
-    });
-  }
-
-  // 更新选中的项目
-  void _updateSelectedItems() {
-    final selectionRect = _selectionRect;
-    if (selectionRect == null) return;
-
-    final selected = <int>{};
-    final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    
-    // 遍历所有网格项，检查是否在选区内
-    for (int i = 0; i < 50; i++) {
-      // 在实际应用中，你需要获取每个网格项的实际位置
-      // 这里简化处理，假设网格项按5列排列
-      final row = i ~/ 5;
-      final col = i % 5;
-      
-      // 计算网格项的大致位置（需要根据实际布局调整）
-      final itemSize = (MediaQuery.of(context).size.width - 16 * 2 - 8 * 4) / 5;
-      final itemLeft = 16 + col * (itemSize + 8);
-      final itemTop = 16 + row * (itemSize + 8);
-      
-      final itemRect = Rect.fromLTWH(
-        itemLeft, 
-        itemTop, 
-        itemSize, 
-        itemSize
-      );
-      
-      if (selectionRect.overlaps(itemRect)) {
-        selected.add(i);
-      }
-    }
-    
-    setState(() {
-      _selectedItems = selected;
-    });
-  }
-}
-
-
 class ImageSelectionScreen extends StatefulWidget {
   const ImageSelectionScreen({super.key});
 
@@ -455,13 +275,12 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
   void _clearSelection() {
     setState(() {
-      _selectionRect = null;
-      _isSelecting = false;
+      //_selectionRect = null;
+      //_isSelecting = false;
     });
   }
 
   void _onPointerDown(PointerDownEvent event) {
-    if (!_isSelecting) return;
     
     setState(() {
       _startPoint = event.localPosition;
@@ -470,7 +289,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   }
 
   void _onPointerMove(PointerMoveEvent event) {
-    if (!_isSelecting || _startPoint == null) return;
+    if ( _startPoint == null) return;
     
     setState(() {
       _selectionRect = Rect.fromPoints(
@@ -481,10 +300,10 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   }
 
   void _onPointerUp(PointerUpEvent event) {
-    if (!_isSelecting) return;
+    //if (!_isSelecting) return;
     
     setState(() {
-      _isSelecting = false;
+      //_isSelecting = false;
       // 确保选区矩形是有效的（宽度和高度为正）
       if (_selectionRect != null) {
         _selectionRect = Rect.fromPoints(
@@ -573,7 +392,7 @@ class _SelectionPainter extends CustomPainter {
       ..color = Colors.blue
       ..style = PaintingStyle.fill;
 
-    const controlPointSize = 8.0;
+    const controlPointSize = 18.0;
     final points = [
       selectionRect!.topLeft,
       selectionRect!.topRight,
