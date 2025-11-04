@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_drawing_board/flutter_drawing_board.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -146,6 +147,30 @@ class _HighlightListViewState extends State<HighlightListView> {
   }
 }
 
+
+
+enum SelectionMode {
+  none,
+  selecting,
+  moving,
+  resizing,
+}
+
+// Hit-Test codes
+enum TrackerHit
+{
+	hitNothing,
+	hitTopLeft, 
+  hitTopRight, 
+  hitBottomRight, 
+  hitBottomLeft,
+	hitTopCenter, 
+  hitRightCenter, 
+  hitBottomCenter, 
+  hitLeftCenter, 
+  hitMiddleCenter
+}
+
 class ImageSelectionScreen extends StatefulWidget {
   const ImageSelectionScreen({super.key});
 
@@ -162,6 +187,72 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   Rect? _selectionRect;
   Offset? _startPoint;
   bool _isSelecting = false;
+  MouseCursor _cursor = SystemMouseCursors.basic;
+
+
+  TrackerHit _trackerHitTest(Offset point) {
+    // if (_selectionRect == null) 
+    //   return TrackerHit.hitNothing;
+
+    const controlPointSize = 18.0;
+    final points = {
+      TrackerHit.hitTopLeft: _selectionRect!.topLeft,
+      TrackerHit.hitTopCenter: _selectionRect!.topCenter,
+      TrackerHit.hitTopRight: _selectionRect!.topRight,
+      TrackerHit.hitRightCenter: _selectionRect!.centerRight,
+      TrackerHit.hitBottomRight: _selectionRect!.bottomRight,
+      TrackerHit.hitBottomCenter: _selectionRect!.bottomCenter,
+      TrackerHit.hitBottomLeft: _selectionRect!.bottomLeft,
+      TrackerHit.hitLeftCenter: _selectionRect!.centerLeft,
+      TrackerHit.hitMiddleCenter: _selectionRect!.center,
+    };
+
+    for (final entry in points.entries) {
+      final rect = Rect.fromCenter(
+        center: entry.value,
+        width: controlPointSize,
+        height: controlPointSize,
+      );
+      if (rect.contains(point)) {
+        return entry.key;
+      }
+    }
+
+    return TrackerHit.hitNothing;
+  }
+
+  void _setCursor(TrackerHit hit) {
+    SystemMouseCursor cursor;
+    switch (hit) {
+      case TrackerHit.hitTopLeft:
+      case TrackerHit.hitBottomRight:
+        cursor = SystemMouseCursors.resizeUpLeftDownRight;
+        break;
+      case TrackerHit.hitTopRight:
+      case TrackerHit.hitBottomLeft:
+        cursor = SystemMouseCursors.resizeUpRightDownLeft;
+        break;
+      case TrackerHit.hitTopCenter:
+      case TrackerHit.hitBottomCenter:
+        cursor = SystemMouseCursors.resizeUpDown;
+        break;
+      case TrackerHit.hitLeftCenter:
+      case TrackerHit.hitRightCenter:
+        cursor = SystemMouseCursors.resizeLeftRight;
+        break;
+      case TrackerHit.hitMiddleCenter:
+        cursor = SystemMouseCursors.move;
+        break;
+      case TrackerHit.hitNothing:
+      default:
+        cursor = SystemMouseCursors.basic;
+        break;
+    }
+    setState(() {
+      _cursor = cursor;
+    });
+    //MouseRegion(cursor: cursor);
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -171,12 +262,12 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.crop_free),
-            onPressed: _startSelection,
+            onPressed: () { },
             tooltip: '开始选区',
           ),
           IconButton(
             icon: const Icon(Icons.clear),
-            onPressed: _clearSelection,
+            onPressed: (){},
             tooltip: '清除选区',
           ),
         ],
@@ -230,10 +321,13 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                         onPointerDown: _onPointerDown,
                         onPointerMove: _onPointerMove,
                         onPointerUp: _onPointerUp,
-                        child: CustomPaint(
-                          painter: _SelectionPainter(
-                            selectionRect: _selectionRect,
-                            isSelecting: _isSelecting,
+                        child:MouseRegion(
+                          cursor: _cursor,
+                          child: CustomPaint(
+                            painter: _SelectionPainter(
+                              selectionRect: _selectionRect,
+                              isSelecting: _isSelecting,
+                            ),
                           ),
                         ),
                       ),
@@ -266,30 +360,34 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     );
   }
 
-  void _startSelection() {
-    setState(() {
-      _isSelecting = true;
-      _selectionRect = null;
-    });
-  }
+  // void _startSelection() {
+  //   setState(() {
+  //     _isSelecting = true;
+  //     _selectionRect = null;
+  //   });
+  // }
 
-  void _clearSelection() {
-    setState(() {
-      //_selectionRect = null;
-      //_isSelecting = false;
-    });
-  }
+  // void _clearSelection() {
+  //   setState(() {
+  //     _selectionRect = null;
+  //     _isSelecting = false;
+  //   });
+  // }
 
   void _onPointerDown(PointerDownEvent event) {
     
     setState(() {
+      _isSelecting = true;
       _startPoint = event.localPosition;
       _selectionRect = Rect.fromPoints(_startPoint!, _startPoint!);
     });
   }
 
   void _onPointerMove(PointerMoveEvent event) {
-    if ( _startPoint == null) return;
+    var ht = _trackerHitTest(event.localPosition);
+    print('Hit Test: $ht');
+    _setCursor(ht);
+    if ( !_isSelecting ) return;
     
     setState(() {
       _selectionRect = Rect.fromPoints(
@@ -300,10 +398,10 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   }
 
   void _onPointerUp(PointerUpEvent event) {
-    //if (!_isSelecting) return;
+    if (!_isSelecting) return;
     
     setState(() {
-      //_isSelecting = false;
+      _isSelecting = false;
       // 确保选区矩形是有效的（宽度和高度为正）
       if (_selectionRect != null) {
         _selectionRect = Rect.fromPoints(
@@ -356,7 +454,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
   void _resetView() {
     _transformationController.value = Matrix4.identity();
-    _clearSelection();
+    //_clearSelection();
   }
 }
 
@@ -395,9 +493,13 @@ class _SelectionPainter extends CustomPainter {
     const controlPointSize = 18.0;
     final points = [
       selectionRect!.topLeft,
+      selectionRect!.topCenter,
       selectionRect!.topRight,
+      selectionRect!.centerRight,
       selectionRect!.bottomRight,
+      selectionRect!.bottomCenter,
       selectionRect!.bottomLeft,
+      selectionRect!.centerLeft,
     ];
 
     for (final point in points) {
