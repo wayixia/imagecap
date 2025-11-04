@@ -1,7 +1,10 @@
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_drawing_board/flutter_drawing_board.dart';
+import 'package:imagecap/utils/native_mouse.dart';
 import 'package:window_manager/window_manager.dart';
 
 
@@ -191,8 +194,8 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
 
   TrackerHit _trackerHitTest(Offset point) {
-    // if (_selectionRect == null) 
-    //   return TrackerHit.hitNothing;
+    if (_selectionRect == null) 
+      return TrackerHit.hitNothing;
 
     const controlPointSize = 18.0;
     final points = {
@@ -225,12 +228,16 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     SystemMouseCursor cursor;
     switch (hit) {
       case TrackerHit.hitTopLeft:
-      case TrackerHit.hitBottomRight:
-        cursor = SystemMouseCursors.resizeUpLeftDownRight;
+        cursor = SystemMouseCursors.resizeUpLeft;
         break;
+      case TrackerHit.hitBottomRight:
+        cursor = SystemMouseCursors.resizeDownRight;
+        break; 
       case TrackerHit.hitTopRight:
+        cursor = SystemMouseCursors.resizeUpRight;
+        break;
       case TrackerHit.hitBottomLeft:
-        cursor = SystemMouseCursors.resizeUpRightDownLeft;
+        cursor = SystemMouseCursors.resizeDownRight;
         break;
       case TrackerHit.hitTopCenter:
       case TrackerHit.hitBottomCenter:
@@ -248,9 +255,21 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         cursor = SystemMouseCursors.basic;
         break;
     }
-    setState(() {
-      _cursor = cursor;
-    });
+
+    if( Platform.isMacOS ) {
+        
+      if( hit == TrackerHit.hitTopLeft ) {
+        NativeCursorManager.setCrosshairCursor();
+      }
+        
+    }
+    else
+    {
+      setState(() {
+        _cursor = cursor;
+      });
+    }
+
     //MouseRegion(cursor: cursor);
   }
   
@@ -321,6 +340,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                         onPointerDown: _onPointerDown,
                         onPointerMove: _onPointerMove,
                         onPointerUp: _onPointerUp,
+                        onPointerHover: _onPointerHover,
                         child:MouseRegion(
                           cursor: _cursor,
                           child: CustomPaint(
@@ -384,9 +404,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   }
 
   void _onPointerMove(PointerMoveEvent event) {
-    var ht = _trackerHitTest(event.localPosition);
-    print('Hit Test: $ht');
-    _setCursor(ht);
+    // var ht = _trackerHitTest(event.localPosition);
+    // print('Hit Test: $ht');
+    // _setCursor(ht);
     if ( !_isSelecting ) return;
     
     setState(() {
@@ -395,6 +415,12 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         event.localPosition,
       );
     });
+  }
+
+  void _onPointerHover(PointerHoverEvent event) {
+    var ht = _trackerHitTest(event.localPosition);
+    print('Hit Test: $ht');
+    _setCursor(ht);
   }
 
   void _onPointerUp(PointerUpEvent event) {
