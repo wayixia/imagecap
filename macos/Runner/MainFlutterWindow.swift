@@ -47,18 +47,30 @@ class MainFlutterWindow: NSWindow {
             NSCursor.arrow.set()
             result(nil)
           case "setCustomCursor":
-            if let args = call.arguments as? [String: Any],
-               let key = args["key"] as? String 
+            let arguments = call.arguments as! [String: Any?]
+            //let args = call.arguments as? [String: Any]
+            
+//            if let args = call.arguments as? [String: Any],
+//               let key = args["cursorkey"] as? String
+            
+            if let key = arguments.first?.value as? String
             {
                 // 根据传入的key设置自定义光标
+
                 if( key == "TopLeft") {
-                  NSCursor.resizeUpLeft.set();
+                  NSCursor.frameResize(position: NSCursor.FrameResizePosition.topLeft,
+                   directions: NSCursor.FrameResizeDirection.Set.all).set();
+                  //NSCursor.FrameResizePosition.topLeft.set();
                 } else if( key == "TopRight") {
-                  NSCursor.resizeUpRight.set();
+                  //NSCursor.resizeUpRight.set();
+                  NSCursor.frameResize(position: NSCursor.FrameResizePosition.topRight,
+                   directions: NSCursor.FrameResizeDirection.Set.all).set();
                 } else if( key == "BottomLeft") {
-                  NSCursor.resizeDownLeft.set();
+                  NSCursor.frameResize(position: NSCursor.FrameResizePosition.bottomLeft,
+                   directions: NSCursor.FrameResizeDirection.Set.all).set();
                 } else if( key == "BottomRight") {
-                  NSCursor.resizeDownRight.set();
+                  NSCursor.frameResize(position: NSCursor.FrameResizePosition.bottomRight,
+                   directions: NSCursor.FrameResizeDirection.Set.all).set();
                 } else {
                   // 尝试加载名为key的图片作为光标
                   NSCursor.arrow.set()
