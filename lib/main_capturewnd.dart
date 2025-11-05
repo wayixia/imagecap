@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_drawing_board/flutter_drawing_board.dart';
-import 'package:imagecap/utils/native_mouse.dart';
+import 'package:imagecap/utils/cursor_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
 
@@ -194,8 +194,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
 
   TrackerHit _trackerHitTest(Offset point) {
-    if (_selectionRect == null) 
+    if (_selectionRect == null) {
       return TrackerHit.hitNothing;
+    }
 
     const controlPointSize = 18.0;
     final points = {
@@ -225,7 +226,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   }
 
   void _setCursor(TrackerHit hit) {
-    SystemMouseCursor cursor;
+    MouseCursor cursor;
     switch (hit) {
       case TrackerHit.hitTopLeft:
         cursor = SystemMouseCursors.resizeUpLeft;
@@ -251,36 +252,25 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         cursor = SystemMouseCursors.move;
         break;
       case TrackerHit.hitNothing:
-      default:
         cursor = SystemMouseCursors.basic;
         break;
     }
 
     if( Platform.isMacOS ) {
-        
       if( hit == TrackerHit.hitTopLeft ) {
-        NativeCursorManager.setCrosshairCursor();
+        cursor = CustomSystemCursor(key: 'TopLeft');
       } else if( hit == TrackerHit.hitTopRight ) {
-        NativeCursorManager.setCrosshairCursor();
+        cursor = CustomSystemCursor(key: 'TopRight');
       } else if( hit == TrackerHit.hitBottomLeft ) {
-        NativeCursorManager.setCrosshairCursor();
+        cursor = CustomSystemCursor(key: 'BottomLeft');
       } else if( hit == TrackerHit.hitBottomRight ) {
-        NativeCursorManager.setCrosshairCursor();
-      } else {
-        setState(() {
-          _cursor = cursor;
-        });
-      }
-        
-    }
-    else
-    {
-      setState(() {
-        _cursor = cursor;
-      });
+        cursor = CustomSystemCursor(key: 'BottomRight');
+      } 
     }
 
-    //MouseRegion(cursor: cursor);
+    setState(() {
+      _cursor = cursor;
+    });
   }
   
   @override

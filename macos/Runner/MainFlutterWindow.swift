@@ -46,6 +46,29 @@ class MainFlutterWindow: NSWindow {
             // 重置为默认箭头光标
             NSCursor.arrow.set()
             result(nil)
+          case "setCustomCursor":
+            if let args = call.arguments as? [String: Any],
+               let key = args["key"] as? String 
+            {
+                // 根据传入的key设置自定义光标
+                if( key == "TopLeft") {
+                  NSCursor.resizeUpLeft.set();
+                } else if( key == "TopRight") {
+                  NSCursor.resizeUpRight.set();
+                } else if( key == "BottomLeft") {
+                  NSCursor.resizeDownLeft.set();
+                } else if( key == "BottomRight") {
+                  NSCursor.resizeDownRight.set();
+                } else {
+                  // 尝试加载名为key的图片作为光标
+                  NSCursor.arrow.set()
+                }
+                
+                result(nil)
+            } else {
+                result(nil)
+                //result(FlutterError(code: "INVALID_ARGUMENT", message: "缺少参数 key", details: nil))
+            }
           default:
             result(FlutterMethodNotImplemented)
           }
