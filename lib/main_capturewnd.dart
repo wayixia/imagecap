@@ -260,6 +260,16 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         
       if( hit == TrackerHit.hitTopLeft ) {
         NativeCursorManager.setCrosshairCursor();
+      } else if( hit == TrackerHit.hitTopRight ) {
+        NativeCursorManager.setCrosshairCursor();
+      } else if( hit == TrackerHit.hitBottomLeft ) {
+        NativeCursorManager.setCrosshairCursor();
+      } else if( hit == TrackerHit.hitBottomRight ) {
+        NativeCursorManager.setCrosshairCursor();
+      } else {
+        setState(() {
+          _cursor = cursor;
+        });
       }
         
     }
