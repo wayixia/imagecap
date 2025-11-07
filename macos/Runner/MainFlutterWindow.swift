@@ -50,15 +50,9 @@ class MainFlutterWindow: NSWindow {
             result(nil)
           case "setCustomCursor":
             let arguments = call.arguments as! [String: Any?]
-            //let args = call.arguments as? [String: Any]
-            
-//            if let args = call.arguments as? [String: Any],
-//               let key = args["cursorkey"] as? String
-            
             if let key = arguments.first?.value as? String
             {
                 // 根据传入的key设置自定义光标
-
                 if( key == "TopLeft") {
                   NSCursor.frameResize(position: NSCursor.FrameResizePosition.topLeft,
                    directions: NSCursor.FrameResizeDirection.Set.all).set();
