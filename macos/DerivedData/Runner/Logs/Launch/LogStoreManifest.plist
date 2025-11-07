@@ -6,7 +6,7 @@
 	<integer>11</integer>
 	<key>logs</key>
 	<dict>
-		<key>98325C40-2FF0-45D6-B71C-BCA534C126CB</key>
+		<key>4832E20D-9D06-4948-84C6-B7C7817CAA0F</key>
 		<dict>
 			<key>className</key>
 			<string>IDESchemeActionsInvocationRecord</string>
@@ -15,7 +15,7 @@
 			<key>domainType</key>
 			<string>com.apple.dt.IDE.AttachSchemeAction</string>
 			<key>fileName</key>
-			<string>Run-2025.11.06_00-18-19-+0800.xcresult</string>
+			<string>Run-2025.11.06_00-22-12-+0800.xcresult</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
@@ -34,85 +34,13 @@
 			<key>signature</key>
 			<string>Run</string>
 			<key>timeStartedRecording</key>
-			<real>784052299.02492797</real>
+			<real>784052532.68018103</real>
 			<key>timeStoppedRecording</key>
-			<real>784052495.10209</real>
+			<real>784052599.61273098</real>
 			<key>title</key>
 			<string>Run</string>
 			<key>uniqueIdentifier</key>
-			<string>98325C40-2FF0-45D6-B71C-BCA534C126CB</string>
-		</dict>
-		<key>BCCD29B6-5764-4C36-B446-FE08021DD954</key>
-		<dict>
-			<key>className</key>
-			<string>IDESchemeActionsInvocationRecord</string>
-			<key>documentTypeString</key>
-			<string>&lt;nil&gt;</string>
-			<key>domainType</key>
-			<string>com.apple.dt.IDE.AttachSchemeAction</string>
-			<key>fileName</key>
-			<string>Run-2025.11.06_00-15-04-+0800.xcresult</string>
-			<key>hasPrimaryLog</key>
-			<true/>
-			<key>primaryObservable</key>
-			<dict>
-				<key>highLevelStatus</key>
-				<string>S</string>
-				<key>totalNumberOfAnalyzerIssues</key>
-				<integer>0</integer>
-				<key>totalNumberOfErrors</key>
-				<integer>0</integer>
-				<key>totalNumberOfTestFailures</key>
-				<integer>0</integer>
-				<key>totalNumberOfWarnings</key>
-				<integer>0</integer>
-			</dict>
-			<key>signature</key>
-			<string>Run</string>
-			<key>timeStartedRecording</key>
-			<real>784052104.50299597</real>
-			<key>timeStoppedRecording</key>
-			<real>784052227.75342798</real>
-			<key>title</key>
-			<string>Run</string>
-			<key>uniqueIdentifier</key>
-			<string>BCCD29B6-5764-4C36-B446-FE08021DD954</string>
-		</dict>
-		<key>F384C147-F140-4169-BECA-2E24FADEB4A7</key>
-		<dict>
-			<key>className</key>
-			<string>IDESchemeActionsInvocationRecord</string>
-			<key>documentTypeString</key>
-			<string>&lt;nil&gt;</string>
-			<key>domainType</key>
-			<string>com.apple.dt.IDE.AttachSchemeAction</string>
-			<key>fileName</key>
-			<string>Run-2025.11.06_00-13-52-+0800.xcresult</string>
-			<key>hasPrimaryLog</key>
-			<true/>
-			<key>primaryObservable</key>
-			<dict>
-				<key>highLevelStatus</key>
-				<string>S</string>
-				<key>totalNumberOfAnalyzerIssues</key>
-				<integer>0</integer>
-				<key>totalNumberOfErrors</key>
-				<integer>0</integer>
-				<key>totalNumberOfTestFailures</key>
-				<integer>0</integer>
-				<key>totalNumberOfWarnings</key>
-				<integer>0</integer>
-			</dict>
-			<key>signature</key>
-			<string>Run</string>
-			<key>timeStartedRecording</key>
-			<real>784052032.79557002</real>
-			<key>timeStoppedRecording</key>
-			<real>784052076.87864196</real>
-			<key>title</key>
-			<string>Run</string>
-			<key>uniqueIdentifier</key>
-			<string>F384C147-F140-4169-BECA-2E24FADEB4A7</string>
+			<string>4832E20D-9D06-4948-84C6-B7C7817CAA0F</string>
 		</dict>
 	</dict>
 </dict>

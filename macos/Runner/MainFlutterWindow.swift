@@ -2,15 +2,17 @@ import Cocoa
 import FlutterMacOS
 import desktop_multi_window
 
+
 class MainFlutterWindow: NSWindow {
   private var methodChannel: FlutterMethodChannel?
+  private var cursors: CursorMac?
   
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController()
     let windowFrame = self.frame
     self.contentViewController = flutterViewController
     self.setFrame(windowFrame, display: true)
-
+    self.cursors = CursorMac();
     
     MainFlutterWindow.registerMethodChannel(with: flutterViewController)
 
@@ -71,6 +73,8 @@ class MainFlutterWindow: NSWindow {
                 } else if( key == "BottomRight") {
                   NSCursor.frameResize(position: NSCursor.FrameResizePosition.bottomRight,
                    directions: NSCursor.FrameResizeDirection.Set.all).set();
+                } else if( key == "Move") {
+                  CursorMac.get("Move").set();
                 } else {
                   // 尝试加载名为key的图片作为光标
                   NSCursor.arrow.set()

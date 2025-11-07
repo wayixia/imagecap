@@ -222,6 +222,10 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       }
     }
 
+    if( _selectionRect!.contains(point) ) {
+      return TrackerHit.hitMiddleCenter;
+    }
+
     return TrackerHit.hitNothing;
   }
 
@@ -265,6 +269,8 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         cursor = CustomSystemCursor(key: 'BottomLeft');
       } else if( hit == TrackerHit.hitBottomRight ) {
         cursor = CustomSystemCursor(key: 'BottomRight');
+      } else if( hit == TrackerHit.hitMiddleCenter ) {
+        cursor = CustomSystemCursor(key: 'Move');
       } 
     }
 
