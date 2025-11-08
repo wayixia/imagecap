@@ -1,10 +1,12 @@
 
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_drawing_board/flutter_drawing_board.dart';
 import 'package:imagecap/utils/cursor_manager.dart';
+import 'package:imagecap/utils/image_utils.dart';
 import 'package:window_manager/window_manager.dart';
 
 
@@ -192,6 +194,70 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   bool _isSelecting = false;
   MouseCursor _cursor = SystemMouseCursors.basic;
   TrackerHit _currentHit = TrackerHit.hitNothing;
+  ui.Image? _image;
+
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImage();
+  }
+
+  Future<void> _loadImage() async {
+    try {
+      final image = await ImageUtils.loadImageFromAsset('assets/images/capture.png');
+      setState(() {
+        _image = image;
+      });
+    } catch (e) {
+      print('Error loading image: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          // 操作提示
+          Container(
+            padding: const EdgeInsets.all(8),
+            color: Colors.grey[100],
+            child: const Text(
+              '使用双指缩放和拖动图片，点击选区按钮后拖动鼠标选择区域',
+              textAlign: TextAlign.center,
+            ),
+          ),
+          
+          // 图片和选区区域
+          Expanded(
+            child: Stack(
+              children: _image != null ? _imageTrackview():[Text("Loading Image...")],
+            ),
+          ),
+          
+          // 操作按钮
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: _selectionRect == null ? null : _cropImage,
+                  child: const Text('裁剪选中区域'),
+                ),
+                ElevatedButton(
+                  onPressed: _resetView,
+                  child: const Text('重置视图'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   TrackerHit _trackerHitTest(Offset point) {
     if (_selectionRect == null) {
@@ -278,133 +344,141 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       _cursor = cursor;
     });
   }
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('图片选区功能'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.crop_free),
-            onPressed: () { },
-            tooltip: '开始选区',
-          ),
-          IconButton(
-            icon: const Icon(Icons.clear),
-            onPressed: (){},
-            tooltip: '清除选区',
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // 操作提示
-          Container(
-            padding: const EdgeInsets.all(8),
-            color: Colors.grey[100],
-            child: const Text(
-              '使用双指缩放和拖动图片，点击选区按钮后拖动鼠标选择区域',
-              textAlign: TextAlign.center,
-            ),
-          ),
-          
-          // 选区信息显示
-          //if (_selectionRect != null)
-            // Container(
-            //   padding: const EdgeInsets.all(8),
-            //   color: Colors.blue[50],
-            //   child: Text(
-            //     '选区信息: ${_selectionRect!.topLeft.dx.toStringAsFixed(1)}, '
-            //     '${_selectionRect!.topLeft.dy.toStringAsFixed(1)} - '
-            //     '${_selectionRect!.bottomRight.dx.toStringAsFixed(1)}, '
-            //     '${_selectionRect!.bottomRight.dy.toStringAsFixed(1)} '
-            //     '大小: ${_selectionRect!.width.toStringAsFixed(1)}×${_selectionRect!.height.toStringAsFixed(1)}',
-            //     textAlign: TextAlign.center,
-            //   ),
-            // ),
-          
-          // 图片和选区区域
-          Expanded(
-            // child: Center(
-            //   child: InteractiveViewer(
-            //     transformationController: _transformationController,
-            //     boundaryMargin: const EdgeInsets.all(20),
-            //     minScale: 0.1,
-            //     maxScale: 4.0,
-                child: Stack(
-                  children: [
-                    // 图片
-                    Image.asset("assets/images/capture.png",
-                      key: _imageKey,
-                      fit: BoxFit.none,
-                    ),
 
-                    // 选区覆盖层
-                    Positioned.fill(
-                      child: Listener(
-                        onPointerDown: _onPointerDown,
-                        onPointerMove: _onPointerMove,
-                        onPointerUp: _onPointerUp,
-                        onPointerHover: _onPointerHover,
-                        child:MouseRegion(
-                          cursor: _cursor,
-                          child: CustomPaint(
-                            painter: _SelectionPainter(
-                              selectionRect: _selectionRect,
-                              isSelecting: _isSelecting,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              //),
-            //),
-          ),
-          
-          // 操作按钮
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: _selectionRect == null ? null : _cropImage,
-                  child: const Text('裁剪选中区域'),
-                ),
-                ElevatedButton(
-                  onPressed: _resetView,
-                  child: const Text('重置视图'),
-                ),
-              ],
+  List<Widget> _imageTrackview() {
+    return <Widget>[ 
+      // 图片 
+      // Image.asset("assets/images/capture.png", 
+      //   key: _imageKey, 
+      //   fit: BoxFit.none,
+      //   alignment: Alignment.topLeft,
+      // ), 
+      _image != null ? CustomPaint(
+                painter: ImagePainter(_image!),
+                size: Size(_image!.width.toDouble(), _image!.height.toDouble()),
+              )
+            : CircularProgressIndicator(),
+
+      // 蒙层
+      Positioned.fill( 
+        child: Container( 
+          color: Colors.black.withOpacity(0.5),
+        ),
+      ),
+      
+      // 选区覆盖层
+      Positioned.fill(
+        child: Listener(
+          onPointerDown: _onPointerDown,
+          onPointerMove: _onPointerMove,
+          onPointerUp: _onPointerUp,
+          onPointerHover: _onPointerHover,
+          child:MouseRegion(
+            cursor: _cursor,
+            child: CustomPaint(
+              painter: _SelectionPainter(
+                image: _image,
+                selectionRect: _selectionRect,
+                isSelecting: _isSelecting,
+              ),
             ),
           ),
-        ],
+        ),
       ),
-    );
+    ];
   }
 
-  // void _startSelection() {
-  //   setState(() {
-  //     _isSelecting = true;
-  //     _selectionRect = null;
-  //   });
-  // }
-
-  // void _clearSelection() {
-  //   setState(() {
-  //     _selectionRect = null;
-  //     _isSelecting = false;
-  //   });
-  // }
+  void _updateTrackerRect(PointerEvent event) {
+    if( _currentHit == TrackerHit.hitMiddleCenter ) {
+      // 移动选区
+      final delta = event.localPosition - _startPoint!;
+      _selectionRect = _selectionRect!.shift(delta);
+      _startPoint = event.localPosition;
+    } else if( _currentHit == TrackerHit.hitLeftCenter ) {
+      // 调整左侧边界
+      _selectionRect = Rect.fromLTRB(
+        event.localPosition.dx,
+        _selectionRect!.top,
+        _selectionRect!.right,
+        _selectionRect!.bottom,
+      );
+    } else if( _currentHit == TrackerHit.hitTopCenter ) {
+      // 调整上侧边界
+      _selectionRect = Rect.fromLTRB(
+        _selectionRect!.left,
+        event.localPosition.dy,
+        _selectionRect!.right,
+        _selectionRect!.bottom,
+      );
+    } else if( _currentHit == TrackerHit.hitRightCenter ) {
+      // 调整右侧边界
+      _selectionRect = Rect.fromLTRB(
+        _selectionRect!.left,
+        _selectionRect!.top,
+        event.localPosition.dx,
+        _selectionRect!.bottom,
+      );
+    } else if( _currentHit == TrackerHit.hitBottomCenter ) {
+      // 调整下侧边界
+      _selectionRect = Rect.fromLTRB(
+        _selectionRect!.left,
+        _selectionRect!.top,
+        _selectionRect!.right,
+        event.localPosition.dy,
+      );
+    } else if( _currentHit == TrackerHit.hitBottomCenter ) {
+      // 调整下侧边界
+      _selectionRect = Rect.fromLTRB(
+        _selectionRect!.left,
+        _selectionRect!.top,
+        _selectionRect!.right,
+        event.localPosition.dy,
+      );
+    } else if( _currentHit == TrackerHit.hitTopLeft ) {
+      // 调整左上角
+      _selectionRect = Rect.fromLTRB(
+        event.localPosition.dx,
+        event.localPosition.dy,
+        _selectionRect!.right,
+        _selectionRect!.bottom,
+      );
+    } else if( _currentHit == TrackerHit.hitTopRight ) {
+      // 调整右上角
+      _selectionRect = Rect.fromLTRB(
+        _selectionRect!.left,
+        event.localPosition.dy,
+        event.localPosition.dx,
+        _selectionRect!.bottom,
+      );
+    } else if( _currentHit == TrackerHit.hitBottomLeft ) {
+      // 调整左下角
+      _selectionRect = Rect.fromLTRB(
+        event.localPosition.dx,
+        _selectionRect!.top,
+        _selectionRect!.right,
+        event.localPosition.dy,
+      );
+    } else if( _currentHit == TrackerHit.hitBottomRight ) {
+      // 调整右下角
+      _selectionRect = Rect.fromLTRB(
+        _selectionRect!.left,
+        _selectionRect!.top,
+        event.localPosition.dx,
+        event.localPosition.dy,
+      );
+    } else {
+      if ( !_isSelecting ) {
+        return;
+      }
+      _selectionRect = Rect.fromPoints( _startPoint!, event.localPosition,);
+    }
+  }
 
 
 
   void _onPointerDown(PointerDownEvent event) {
-
     _currentHit = _trackerHitTest(event.localPosition);
+
     setState(() {
       if( _currentHit != TrackerHit.hitNothing ) {
         // 开始移动选区
@@ -423,124 +497,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     //var ht = _trackerHitTest(event.localPosition);
     // print('Hit Test: $ht');
     // _setCursor(ht);
-
-   
-    if( _currentHit == TrackerHit.hitMiddleCenter ) {
-      setState(() {
-        // 移动选区
-        final delta = event.localPosition - _startPoint!;
-        _selectionRect = _selectionRect!.shift(delta);
-        _startPoint = event.localPosition;
-        return;
-      }); 
-    } else if( _currentHit == TrackerHit.hitLeftCenter ) {
-      setState(() {
-        // 调整左侧边界
-        _selectionRect = Rect.fromLTRB(
-          event.localPosition.dx,
-          _selectionRect!.top,
-          _selectionRect!.right,
-          _selectionRect!.bottom,
-        );
-        return;
-      });
-    } else if( _currentHit == TrackerHit.hitTopCenter ) {
-      setState(() {
-        // 调整上侧边界
-        _selectionRect = Rect.fromLTRB(
-          _selectionRect!.left,
-          event.localPosition.dy,
-          _selectionRect!.right,
-          _selectionRect!.bottom,
-        );
-        return;
-      });
-    } else if( _currentHit == TrackerHit.hitRightCenter ) {
-      setState(() {
-        // 调整右侧边界
-        _selectionRect = Rect.fromLTRB(
-          _selectionRect!.left,
-          _selectionRect!.top,
-          event.localPosition.dx,
-          _selectionRect!.bottom,
-        );
-        return;
-      });
-    } else if( _currentHit == TrackerHit.hitBottomCenter ) {
-      setState(() {
-        // 调整下侧边界
-        _selectionRect = Rect.fromLTRB(
-          _selectionRect!.left,
-          _selectionRect!.top,
-          _selectionRect!.right,
-          event.localPosition.dy,
-        );
-        return;
-      });
-    } else if( _currentHit == TrackerHit.hitBottomCenter ) {
-      setState(() {
-        // 调整下侧边界
-        _selectionRect = Rect.fromLTRB(
-          _selectionRect!.left,
-          _selectionRect!.top,
-          _selectionRect!.right,
-          event.localPosition.dy,
-        );
-        return;
-      });
-    } else if( _currentHit == TrackerHit.hitTopLeft ) {
-      setState(() {
-        // 调整左上角
-        _selectionRect = Rect.fromLTRB(
-          event.localPosition.dx,
-          event.localPosition.dy,
-          _selectionRect!.right,
-          _selectionRect!.bottom,
-        );
-        return;
-      });
-    } else if( _currentHit == TrackerHit.hitTopRight ) {
-      setState(() {
-        // 调整右上角
-        _selectionRect = Rect.fromLTRB(
-          _selectionRect!.left,
-          event.localPosition.dy,
-          event.localPosition.dx,
-          _selectionRect!.bottom,
-        );
-        return;
-      });
-    } else if( _currentHit == TrackerHit.hitBottomLeft ) {
-      setState(() {
-        // 调整左下角
-        _selectionRect = Rect.fromLTRB(
-          event.localPosition.dx,
-          _selectionRect!.top,
-          _selectionRect!.right,
-          event.localPosition.dy,
-        );
-        return;
-      });
-    } else if( _currentHit == TrackerHit.hitBottomRight ) {
-      setState(() {
-        // 调整右下角
-        _selectionRect = Rect.fromLTRB(
-          _selectionRect!.left,
-          _selectionRect!.top,
-          event.localPosition.dx,
-          event.localPosition.dy,
-        );
-        return;
-      });
-    } else {
-      if ( !_isSelecting ) return;
-      setState(() {
-        _selectionRect = Rect.fromPoints(
-          _startPoint!,
-          event.localPosition,
-        );
-      });
-    }
+    setState(() {
+      _updateTrackerRect(event);
+    });
   }
 
   void _onPointerHover(PointerHoverEvent event) {
@@ -614,19 +573,19 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 class _SelectionPainter extends CustomPainter {
   final Rect? selectionRect;
   final bool isSelecting;
+  final ui.Image? image;
 
   const _SelectionPainter({
     required this.selectionRect,
     required this.isSelecting,
+    required this.image,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (selectionRect == null) return;
-
-    final paint = Paint()
-      ..color = Colors.blue.withOpacity(0.3)
-      ..style = PaintingStyle.fill;
+    if (selectionRect == null) {
+      return;
+    }
 
     final borderPaint = Paint()
       ..color = Colors.blue
@@ -634,8 +593,16 @@ class _SelectionPainter extends CustomPainter {
       ..strokeWidth = 2.0;
 
     // 绘制选区矩形
-    canvas.drawRect(selectionRect!, paint);
+    //canvas.drawRect(selectionRect!, paint);
+    if( image != null ) {
+      // final paint = Paint()
+      // ..color = Colors.transparent
+      // ..style = PaintingStyle.fill;
+      canvas.drawImageRect(image!, selectionRect!, selectionRect!, Paint());
+    }
     canvas.drawRect(selectionRect!, borderPaint);
+
+    //canvas.drawImageRect(image!, selectionRect!, selectionRect!, paint);
 
     // 绘制选区角落的控制点
     final controlPointPaint = Paint()
