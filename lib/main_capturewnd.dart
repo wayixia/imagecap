@@ -258,7 +258,6 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     );
   }
 
-
   TrackerHit _trackerHitTest(Offset point) {
     if (_selectionRect == null) {
       return TrackerHit.hitNothing;
@@ -353,11 +352,10 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       //   fit: BoxFit.none,
       //   alignment: Alignment.topLeft,
       // ), 
-      _image != null ? CustomPaint(
-                painter: ImagePainter(_image!),
-                size: Size(_image!.width.toDouble(), _image!.height.toDouble()),
-              )
-            : CircularProgressIndicator(),
+      CustomPaint( 
+        painter: ImagePainter(_image!), 
+        size: Size(_image!.width.toDouble(), _image!.height.toDouble()),
+      ),
 
       // 蒙层
       Positioned.fill( 
