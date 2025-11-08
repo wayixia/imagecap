@@ -36,8 +36,8 @@ class MainFlutterWindow: NSWindow {
       )
       
       channel.setMethodCallHandler { [] (call: FlutterMethodCall, result: @escaping FlutterResult) in
-          print("📱 macOS 收到方法调用: \(call.method)")
-          print("参数: \(call.arguments ?? "无")")
+          //print("📱 macOS 收到方法调用: \(call.method)")
+          //print("参数: \(call.arguments ?? "无")")
           
           switch call.method {
           case "setCrosshairCursor":
@@ -54,19 +54,23 @@ class MainFlutterWindow: NSWindow {
             {
                 // 根据传入的key设置自定义光标
                 if( key == "TopLeft") {
-                  NSCursor.frameResize(position: NSCursor.FrameResizePosition.topLeft,
-                   directions: NSCursor.FrameResizeDirection.Set.all).set();
+                  //NSCursor.frameResize(position: NSCursor.FrameResizePosition.topLeft,
+                  // directions: NSCursor.FrameResizeDirection.Set.all).set();
                   //NSCursor.FrameResizePosition.topLeft.set();
+                  CursorMac.get("ResizeNorthwestSoutheast").set();
                 } else if( key == "TopRight") {
                   //NSCursor.resizeUpRight.set();
-                  NSCursor.frameResize(position: NSCursor.FrameResizePosition.topRight,
-                   directions: NSCursor.FrameResizeDirection.Set.all).set();
+                  //NSCursor.frameResize(position: NSCursor.FrameResizePosition.topRight,
+                  // directions: NSCursor.FrameResizeDirection.Set.all).set();
+                  CursorMac.get("ResizeNortheastSouthwest").set();
                 } else if( key == "BottomLeft") {
-                  NSCursor.frameResize(position: NSCursor.FrameResizePosition.bottomLeft,
-                   directions: NSCursor.FrameResizeDirection.Set.all).set();
+                  CursorMac.get("ResizeNortheastSouthwest").set();
+                  //NSCursor.frameResize(position: NSCursor.FrameResizePosition.bottomLeft,
+                  // directions: NSCursor.FrameResizeDirection.Set.all).set();
                 } else if( key == "BottomRight") {
-                  NSCursor.frameResize(position: NSCursor.FrameResizePosition.bottomRight,
-                   directions: NSCursor.FrameResizeDirection.Set.all).set();
+                  //NSCursor.frameResize(position: NSCursor.FrameResizePosition.bottomRight,
+                  // directions: NSCursor.FrameResizeDirection.Set.all).set();
+                  CursorMac.get("ResizeNorthwestSoutheast").set();
                 } else if( key == "Move") {
                   CursorMac.get("Move").set();
                 } else {

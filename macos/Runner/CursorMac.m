@@ -37,6 +37,10 @@ static NSCursor *zoomOutNSCursor;
   if( self ) {
     // init cursors
     moveNSCursor = [self loadCursorFromSystemService:@"Move"];
+    // topright
+    resizeNortheastSouthwestNSCursor = [self loadCursorFromSystemService:@"ResizeNortheastSouthwest"];
+    // topleft
+    resizeNorthwestSoutheastNSCursor = [self loadCursorFromSystemService:@"ResizeNorthwestSoutheast"];
   }
   
   return self;

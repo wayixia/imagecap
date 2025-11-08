@@ -191,7 +191,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   Offset? _startPoint;
   bool _isSelecting = false;
   MouseCursor _cursor = SystemMouseCursors.basic;
-
+  TrackerHit _currentHit = TrackerHit.hitNothing;
 
   TrackerHit _trackerHitTest(Offset point) {
     if (_selectionRect == null) {
@@ -400,9 +400,18 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   //   });
   // }
 
+
+
   void _onPointerDown(PointerDownEvent event) {
-    
+
+    _currentHit = _trackerHitTest(event.localPosition);
     setState(() {
+      if( _currentHit != TrackerHit.hitNothing ) {
+        // 开始移动选区
+        _startPoint = event.localPosition;
+        return;
+      }
+
       _isSelecting = true;
       _startPoint = event.localPosition;
       _selectionRect = Rect.fromPoints(_startPoint!, _startPoint!);
@@ -410,17 +419,128 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   }
 
   void _onPointerMove(PointerMoveEvent event) {
-    // var ht = _trackerHitTest(event.localPosition);
+    // dragging move
+    //var ht = _trackerHitTest(event.localPosition);
     // print('Hit Test: $ht');
     // _setCursor(ht);
-    if ( !_isSelecting ) return;
-    
-    setState(() {
-      _selectionRect = Rect.fromPoints(
-        _startPoint!,
-        event.localPosition,
-      );
-    });
+
+   
+    if( _currentHit == TrackerHit.hitMiddleCenter ) {
+      setState(() {
+        // 移动选区
+        final delta = event.localPosition - _startPoint!;
+        _selectionRect = _selectionRect!.shift(delta);
+        _startPoint = event.localPosition;
+        return;
+      }); 
+    } else if( _currentHit == TrackerHit.hitLeftCenter ) {
+      setState(() {
+        // 调整左侧边界
+        _selectionRect = Rect.fromLTRB(
+          event.localPosition.dx,
+          _selectionRect!.top,
+          _selectionRect!.right,
+          _selectionRect!.bottom,
+        );
+        return;
+      });
+    } else if( _currentHit == TrackerHit.hitTopCenter ) {
+      setState(() {
+        // 调整上侧边界
+        _selectionRect = Rect.fromLTRB(
+          _selectionRect!.left,
+          event.localPosition.dy,
+          _selectionRect!.right,
+          _selectionRect!.bottom,
+        );
+        return;
+      });
+    } else if( _currentHit == TrackerHit.hitRightCenter ) {
+      setState(() {
+        // 调整右侧边界
+        _selectionRect = Rect.fromLTRB(
+          _selectionRect!.left,
+          _selectionRect!.top,
+          event.localPosition.dx,
+          _selectionRect!.bottom,
+        );
+        return;
+      });
+    } else if( _currentHit == TrackerHit.hitBottomCenter ) {
+      setState(() {
+        // 调整下侧边界
+        _selectionRect = Rect.fromLTRB(
+          _selectionRect!.left,
+          _selectionRect!.top,
+          _selectionRect!.right,
+          event.localPosition.dy,
+        );
+        return;
+      });
+    } else if( _currentHit == TrackerHit.hitBottomCenter ) {
+      setState(() {
+        // 调整下侧边界
+        _selectionRect = Rect.fromLTRB(
+          _selectionRect!.left,
+          _selectionRect!.top,
+          _selectionRect!.right,
+          event.localPosition.dy,
+        );
+        return;
+      });
+    } else if( _currentHit == TrackerHit.hitTopLeft ) {
+      setState(() {
+        // 调整左上角
+        _selectionRect = Rect.fromLTRB(
+          event.localPosition.dx,
+          event.localPosition.dy,
+          _selectionRect!.right,
+          _selectionRect!.bottom,
+        );
+        return;
+      });
+    } else if( _currentHit == TrackerHit.hitTopRight ) {
+      setState(() {
+        // 调整右上角
+        _selectionRect = Rect.fromLTRB(
+          _selectionRect!.left,
+          event.localPosition.dy,
+          event.localPosition.dx,
+          _selectionRect!.bottom,
+        );
+        return;
+      });
+    } else if( _currentHit == TrackerHit.hitBottomLeft ) {
+      setState(() {
+        // 调整左下角
+        _selectionRect = Rect.fromLTRB(
+          event.localPosition.dx,
+          _selectionRect!.top,
+          _selectionRect!.right,
+          event.localPosition.dy,
+        );
+        return;
+      });
+    } else if( _currentHit == TrackerHit.hitBottomRight ) {
+      setState(() {
+        // 调整右下角
+        _selectionRect = Rect.fromLTRB(
+          _selectionRect!.left,
+          _selectionRect!.top,
+          event.localPosition.dx,
+          event.localPosition.dy,
+        );
+        return;
+      });
+    } else {
+      if ( !_isSelecting ) return;
+      setState(() {
+        _selectionRect = Rect.fromPoints(
+          _startPoint!,
+          event.localPosition,
+        );
+      });
+    }
   }
 
   void _onPointerHover(PointerHoverEvent event) {
