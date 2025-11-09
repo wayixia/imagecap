@@ -5,9 +5,10 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_drawing_board/flutter_drawing_board.dart';
+import 'package:imagecap/screenshot_editor.dart';
 import 'package:imagecap/utils/cursor_manager.dart';
 import 'package:imagecap/utils/image_utils.dart';
-import 'package:window_manager/window_manager.dart';
+//import 'package:window_manager/window_manager.dart';
 
 
 
@@ -39,9 +40,10 @@ class CaptureWndApp extends StatelessWidget {
       ),
       //home: const MyHomePage(title: 'Flutter Demo Home Page'),
       //home: RectangleSelectionDemo()
-      //home: ScreenshotEditor(),
+      home: ScreenshotEditor(),
       debugShowCheckedModeBanner: false,
-      home: ImageSelectionScreen()
+      //home: ImageSelectionScreen()
+
     );
   }
 }
@@ -186,7 +188,6 @@ class ImageSelectionScreen extends StatefulWidget {
 class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   final TransformationController _transformationController =
       TransformationController();
-  final GlobalKey _imageKey = GlobalKey();
   
   // 选区相关状态
   Rect? _selectionRect;
@@ -195,6 +196,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   MouseCursor _cursor = SystemMouseCursors.basic;
   TrackerHit _currentHit = TrackerHit.hitNothing;
   ui.Image? _image;
+  bool _showToolbar = false;
+  Offset _toolbarPosition = Offset.zero;
+
 
 
   @override
@@ -219,15 +223,15 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     return Scaffold(
       body: Column(
         children: [
-          // 操作提示
-          Container(
-            padding: const EdgeInsets.all(8),
-            color: Colors.grey[100],
-            child: const Text(
-              '使用双指缩放和拖动图片，点击选区按钮后拖动鼠标选择区域',
-              textAlign: TextAlign.center,
-            ),
-          ),
+          // // 操作提示
+          // Container(
+          //   padding: const EdgeInsets.all(8),
+          //   color: Colors.grey[100],
+          //   child: const Text(
+          //     '使用双指缩放和拖动图片，点击选区按钮后拖动鼠标选择区域',
+          //     textAlign: TextAlign.center,
+          //   ),
+          // ),
           
           // 图片和选区区域
           Expanded(
@@ -236,23 +240,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
             ),
           ),
           
-          // 操作按钮
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: _selectionRect == null ? null : _cropImage,
-                  child: const Text('裁剪选中区域'),
-                ),
-                ElevatedButton(
-                  onPressed: _resetView,
-                  child: const Text('重置视图'),
-                ),
-              ],
-            ),
-          ),
+
         ],
       ),
     );
@@ -383,7 +371,79 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           ),
         ),
       ),
+    
+      // 工具栏
+      if(_showToolbar) 
+        Positioned(
+          left: _toolbarPosition.dx,
+          top: _toolbarPosition.dy,
+          width: 300,
+          height: 50,
+          child: _toolbarView(),
+        ),
     ];
+  }
+  Widget _toolbarView2() {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      color: Colors.grey[200],
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          ElevatedButton(
+            onPressed: _selectionRect == null ? null : _cropImage,
+            child: const Text('裁剪选中区域'),
+          ),
+          ElevatedButton(
+            onPressed: _resetView,
+            child: const Text('重置视图'),
+          ),
+        ],
+      ),
+    );  
+
+  }
+
+  Widget _toolbarView() {
+    return Container(
+  height: 80,
+  margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+  decoration: BoxDecoration(
+    gradient: LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: [Colors.blue, Colors.purple],
+    ),
+    borderRadius: BorderRadius.circular(20),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.blue.withOpacity(0.3),
+        blurRadius: 8,
+        offset: Offset(0, 4),
+      ),
+    ],
+  ),
+  child: Row(
+    children: [
+      SizedBox(width: 20),
+      Icon(Icons.arrow_back, color: Colors.white),
+      Expanded(
+        child: Center(
+          child: Text(
+            '渐变工具条',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+      Icon(Icons.more_vert, color: Colors.white),
+      SizedBox(width: 20),
+    ],
+  ),
+);
   }
 
   void _updateTrackerRect(PointerEvent event) {
@@ -472,12 +532,11 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     }
   }
 
-
-
   void _onPointerDown(PointerDownEvent event) {
     _currentHit = _trackerHitTest(event.localPosition);
 
     setState(() {
+      _showToolbar = false;
       if( _currentHit != TrackerHit.hitNothing ) {
         // 开始移动选区
         _startPoint = event.localPosition;
@@ -507,6 +566,16 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   }
 
   void _onPointerUp(PointerUpEvent event) {
+    //if(_currentHit == TrackerHit.hitMiddleCenter ) {
+      // 结束移动选区
+      //_currentHit = TrackerHit.hitNothing;
+      setState(() {
+        _showToolbar = true;
+        _toolbarPosition = Offset( _selectionRect!.left, _selectionRect!.bottom + 10); 
+      });
+    //  return;
+    //}
+
     if (!_isSelecting) return;
     
     setState(() {
@@ -531,6 +600,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                 : _selectionRect!.top,
           ),
         );
+        _showToolbar = true;
+        _toolbarPosition = Offset( _selectionRect!.left, _selectionRect!.bottom + 10);
+        print(_toolbarPosition);
       }
     });
   }
