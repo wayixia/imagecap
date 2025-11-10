@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'main_frame.dart';
-import 'main_capturewnd.dart';
+import 'wnds/capture/wnd.dart';
 import 'package:args/args.dart';
 
 
