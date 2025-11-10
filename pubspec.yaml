@@ -39,8 +39,8 @@ dependencies:
   window_manager: ^0.5.1
   desktop_multi_window: #^0.3.0
     path: ./plugins/desktop_multi_window
-  flutter_drawing_board:
-    path: ./plugins/flutter_drawing_board
+  # flutter_drawing_board:
+  #   path: ./plugins/flutter_drawing_board
   #image: ^3.0.0
 
 dev_dependencies:
