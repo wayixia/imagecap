@@ -91,6 +91,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   ui.Image? _image;
   bool _showToolbar = false;
   Offset _toolbarPosition = Offset.zero;
+  String? _selectedTool;
 
 
 
@@ -259,6 +260,12 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
   Widget _toolbarView() {
     return CaptureToolbar(
+      selectedTool: _selectedTool,
+      onToolSelected: (tool) {
+        setState(() {
+          _selectedTool = tool;
+        });
+      },
       onUndo: () {
         print('Undo action');
       },

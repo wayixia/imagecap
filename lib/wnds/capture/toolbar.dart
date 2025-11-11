@@ -6,6 +6,8 @@ import 'package:flutter/rendering.dart';
 import 'dart:typed_data';
 
 
+typedef ToolSelectedCallback = void Function(String? tool);
+
 
 class CaptureToolbar extends StatefulWidget {
   final VoidCallback onUndo;
@@ -13,12 +15,19 @@ class CaptureToolbar extends StatefulWidget {
   final VoidCallback onClear;
   final VoidCallback onSave;
   final VoidCallback onClose;
+  final ToolSelectedCallback onToolSelected;
   final bool canUndo;
   final bool canRedo;
+  
+  String? selectedTool;
+  bool showTextInput;
 
 
-  const CaptureToolbar({
+  CaptureToolbar({
     super.key,
+    this.selectedTool,
+    this.showTextInput = false,
+    required this.onToolSelected,
     required this.onUndo,
     required this.onRedo,
     required this.onClear,
@@ -35,8 +44,14 @@ class CaptureToolbar extends StatefulWidget {
 }
 
 class _CaptureToolbarState extends State<CaptureToolbar> {
-  String? _selectedTool = 'pen';
-  bool? _showTextInput = false;
+  //String? _selectedTool;
+  //bool? _showTextInput = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -50,6 +65,14 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
       {'icon': Icons.text_fields, 'label': '文本', 'tool': 'text'},
       {'icon': Icons.arrow_right_alt, 'label': '箭头', 'tool': 'arrow'},
       {'icon': Icons.blur_on, 'label': '模糊', 'tool': 'blur'},
+    ];
+
+    List<Map<String, dynamic>> actions = [
+      {'icon': Icons.undo, 'label': '撤销', 'tool':'undo', 'action': widget.onUndo, 'enabled': widget.canUndo},
+      {'icon': Icons.redo, 'label': '重做', 'tool':'redo', 'action': widget.onRedo, 'enabled': widget.canRedo},
+      {'icon': Icons.delete, 'label': '清除', 'tool':'clear', 'action': widget.onClear, 'enabled': true},
+      {'icon': Icons.save, 'label': '保存', 'tool':'save', 'action': widget.onSave, 'enabled': true},
+      {'icon': Icons.close, 'label': '关闭', 'tool':'close', 'action': widget.onClose, 'enabled': true},
     ];
 
     return Container(
@@ -66,19 +89,10 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
         ],
       ),
       child: Row(
-        children: tools.map((tool) {
-          return Row(
-            children: [
-              _buildToolButton(
-                tool['icon'],
-                tool['label'],
-                tool['tool'],
-                isSelected: _selectedTool == tool['tool'],
-              ),
-              SizedBox(height: 15),
-            ],
-          );
-        }).toList(),
+        children: [
+          Row(children: _buildToolButtons(tools),),
+          Row(children: _buildActionButtons(actions),),
+        ],
       ),
     );
     // return Container(
@@ -134,21 +148,15 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
 
   }
 
-    Widget _buildToolButton(IconData icon, String tooltip, String tool,
+  Widget _buildToolButton(IconData icon, String tooltip, String tool,
       {bool isSelected = false}) {
     return Tooltip(
       message: tooltip,
       child: GestureDetector(
         onTap: () {
-          setState(() {
-            if( _selectedTool == tool ) {
-              _selectedTool = null;
-              _showTextInput = false;
-            } else {
-              _selectedTool = tool;
-              //_showTextInput = false;
-            }
-          });
+          widget.onToolSelected(isSelected ? null : tool);
+          // setState(() {
+          // });
         },
         child: Container(
           width: 45,
@@ -166,7 +174,60 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
       ),
     );
   }
+
+  List<Widget> _buildToolButtons( List<Map<String, dynamic>> tools ) {
+    return tools.map((tool) {
+      return Row(
+        children: [
+          _buildToolButton(
+            tool['icon'],
+            tool['label'],
+            tool['tool'],
+            isSelected: tool['tool'] == widget.selectedTool,
+
+          ),
+          SizedBox(height: 15),
+        ],
+      );
+    }).toList();
+  }
+
+  Widget _buildActionButton(IconData icon, String tooltip, String tool,
+      {VoidCallback? onpressed}) {
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: onpressed,
+        child: Container(
+          width: 45,
+          height: 45,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: Colors.grey[300],
+            size: 22,
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildActionButtons( List<Map<String, dynamic>> actions ) {
+    return actions.map((action){
+      return Row(
+        children: [
+          _buildActionButton( action['icon'], action['label'], action['tool'], onpressed: action['enabled'] ? action['action'] : null ),
+          SizedBox(height: 15),
+        ],
+      );
+    }).toList();
+  }
 }
+
+
 
 
 // class DrawingPoint {
