@@ -1,5 +1,6 @@
 
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -71,6 +72,43 @@ enum TrackerHit
   hitMiddleCenter
 }
 
+enum DrawElementTypeHit {
+  hitDrawNone,
+  hitDrawText,
+  hitDrawLine,
+  hitDrawRectangle,
+  hitDrawCircle,
+  hitDrawArrow,
+  hitDrawPen
+}
+
+class DrawingPoint {
+  Offset offset;
+  Color color;
+  double strokeWidth;
+  String tool;
+
+  DrawingPoint({
+    required this.offset,
+    required this.color,
+    required this.strokeWidth,
+    required this.tool,
+  });
+}
+
+class DrawingPath {
+  List<DrawingPoint> points = [];
+  Color color;
+  double strokeWidth;
+  String tool;
+
+  DrawingPath({
+    required this.color,
+    required this.strokeWidth,
+    required this.tool,
+  });
+}
+
 class ImageSelectionScreen extends StatefulWidget {
   const ImageSelectionScreen({super.key});
 
@@ -91,7 +129,18 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   ui.Image? _image;
   bool _showToolbar = false;
   Offset _toolbarPosition = Offset.zero;
-  String? _selectedTool;
+
+  // 绘图相关状态
+  List<DrawingPath> _paths = [];
+  List<DrawingPath> redoPaths = [];
+  Color _selectedColor = Colors.red;
+  double strokeWidth = 3.0;
+  bool isDrawing = false;
+  Offset? currentOffset;
+  TextEditingController? _textController;
+  Offset? _textPosition;
+  bool showTextInput = false;
+  String _selectedTool = "";
 
 
 
@@ -119,6 +168,16 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
               children: _image != null ? _imageTrackview():[Text("Loading Image...")],
             ),
     );
+  }
+
+
+  bool _isDrawMode()
+  {
+    return ( _selectedTool != "" );
+  }
+
+  DrawElementTypeHit _drawElementHitTest(Offset point) {
+    return DrawElementTypeHit.hitDrawNone;
   }
 
   TrackerHit _trackerHitTest(Offset point) {
@@ -181,7 +240,11 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         cursor = SystemMouseCursors.resizeLeftRight;
         break;
       case TrackerHit.hitMiddleCenter:
-        cursor = SystemMouseCursors.move;
+        if( _isDrawMode() ) {
+          cursor = SystemMouseCursors.precise;
+        } else {
+          cursor = SystemMouseCursors.move;
+        }
         break;
       case TrackerHit.hitNothing:
         cursor = SystemMouseCursors.basic;
@@ -198,7 +261,11 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       } else if( hit == TrackerHit.hitBottomRight ) {
         cursor = CustomSystemCursor(key: 'BottomRight');
       } else if( hit == TrackerHit.hitMiddleCenter ) {
-        cursor = CustomSystemCursor(key: 'Move');
+        if( _isDrawMode() ) {
+          cursor = SystemMouseCursors.precise;
+        } else {
+          cursor = CustomSystemCursor(key: 'Move');
+        }
       } 
     }
 
@@ -241,6 +308,10 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                 image: _image,
                 selectionRect: _selectionRect,
                 isSelecting: _isSelecting,
+                paths: _paths, 
+                textColor: _selectedColor,
+                textPosition: _textPosition,
+                textContent: _textController?.text,
               ),
             ),
           ),
@@ -414,18 +485,31 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   void _onPointerDown(PointerDownEvent event) {
     _currentHit = _trackerHitTest(event.localPosition);
 
-    setState(() {
-      _showToolbar = false;
-      if( _currentHit != TrackerHit.hitNothing ) {
-        // 开始移动选区
-        _startPoint = event.localPosition;
-        return;
-      }
+    if( _isDrawMode() ) {
+      // 绘图模式
+      _onPanStart(event);
+    } else {
+      // 非绘图模式，移动选区，缩放选区
+      if(_currentHit != TrackerHit.hitNothing ) {
+        // hit some thing
+        if( _currentHit == TrackerHit.hitMiddleCenter ) {
+          // 移动选区
+        }
 
-      _isSelecting = true;
-      _startPoint = event.localPosition;
-      _selectionRect = Rect.fromPoints(_startPoint!, _startPoint!);
-    });
+        setState(() {
+          _showToolbar = false; 
+          _startPoint = event.localPosition; 
+        });
+      } else {
+        // 建立选区
+        setState(() {
+          _showToolbar = false; 
+          _isSelecting = true; 
+          _startPoint = event.localPosition; 
+          _selectionRect = Rect.fromPoints(_startPoint!, _startPoint!);
+        });
+      }
+    }
   }
 
   void _onPointerMove(PointerMoveEvent event) {
@@ -433,14 +517,18 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     //var ht = _trackerHitTest(event.localPosition);
     // print('Hit Test: $ht');
     // _setCursor(ht);
-    setState(() {
-      _updateTrackerRect(event);
-    });
+    if( _isDrawMode() ) {
+      _onPanUpdate(event);
+    } else {
+      setState(() {
+        _updateTrackerRect(event);
+      });
+    }
   }
 
   void _onPointerHover(PointerHoverEvent event) {
     var ht = _trackerHitTest(event.localPosition);
-    print('Hit Test: $ht');
+    //print('Hit Test: $ht');
     _setCursor(ht);
   }
 
@@ -448,10 +536,14 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     //if(_currentHit == TrackerHit.hitMiddleCenter ) {
       // 结束移动选区
       //_currentHit = TrackerHit.hitNothing;
-      setState(() {
-        _showToolbar = true;
-        _toolbarPosition = Offset( _selectionRect!.left, _selectionRect!.bottom + 10); 
-      });
+      if( _isDrawMode() ) {
+        _onPanEnd(event);
+      } else {
+        setState(() {
+          _showToolbar = true;
+          _toolbarPosition = Offset( _selectionRect!.left, _selectionRect!.bottom + 10); 
+        });
+      }
     //  return;
     //}
 
@@ -485,6 +577,76 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       }
     });
   }
+
+
+ // 绘图相关方法
+  void _onPanStart(PointerDownEvent details) {
+    if (_selectedTool == 'text') return;
+
+    setState(() {
+      isDrawing = true;
+      redoPaths.clear();
+      
+      if (_selectedTool == 'pen' || _selectedTool == 'highlighter') {
+        _paths.add(DrawingPath(
+          color: _selectedColor,
+          strokeWidth: strokeWidth,
+          tool: _selectedTool,
+        ));
+        
+        _paths.last.points.add(DrawingPoint(
+          offset: details.localPosition,
+          color: _selectedColor,
+          strokeWidth: strokeWidth,
+          tool: _selectedTool,
+        ));
+      } else {
+        currentOffset = details.localPosition;
+      }
+    });
+  }
+
+  void _onPanUpdate(PointerMoveEvent details) {
+    if (!isDrawing || _selectedTool == 'text') return;
+
+    setState(() {
+      if (_selectedTool == 'pen' || _selectedTool == 'highlighter') {
+        _paths.last.points.add(DrawingPoint(
+          offset: details.localPosition,
+          color: _selectedColor,
+          strokeWidth: strokeWidth,
+          tool: _selectedTool,
+        ));
+      } else {
+        currentOffset = details.localPosition;
+      }
+    });
+  }
+
+  void _onPanEnd(PointerUpEvent details) {
+    if (_selectedTool == 'text') return;
+
+    setState(() {
+      isDrawing = false;
+      if (_selectedTool != 'pen' && _selectedTool != 'highlighter' && currentOffset != null) {
+        // 对于形状工具，添加完整的路径
+        _paths.add(DrawingPath(
+          color: _selectedColor,
+          strokeWidth: strokeWidth,
+          tool: _selectedTool,
+        ));
+        
+        _paths.last.points.add(DrawingPoint(
+          offset: currentOffset!,
+          color: _selectedColor,
+          strokeWidth: strokeWidth,
+          tool: _selectedTool,
+        ));
+      }
+      currentOffset = null;
+    });
+  }
+
 
   void _cropImage() {
     if (_selectionRect == null) return;
@@ -524,10 +686,19 @@ class _SelectionPainter extends CustomPainter {
   final bool isSelecting;
   final ui.Image? image;
 
+  final List<DrawingPath> paths;
+  final Offset? textPosition;
+  final String? textContent;
+  final Color textColor;
+
   const _SelectionPainter({
     required this.selectionRect,
     required this.isSelecting,
     required this.image,
+    required this.paths,
+    this.textPosition,
+    this.textContent,
+    required this.textColor,
   });
 
   @override
@@ -603,11 +774,101 @@ class _SelectionPainter extends CustomPainter {
         ),
       );
     }
+    else {
+      _paintPaths(canvas, size);
+    }
   }
+
+
+   void _paintPaths(Canvas canvas, Size size) {
+    // 绘制所有路径
+    for (var path in paths) {
+      final paint = Paint()
+        ..color = path.tool == 'highlighter' 
+            ? path.color.withOpacity(0.3) 
+            : path.color
+        ..strokeWidth = path.strokeWidth
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke;
+
+      if (path.tool == 'highlighter') {
+        paint.blendMode = BlendMode.multiply;
+      }
+
+      if (path.points.isNotEmpty) {
+        if (path.tool == 'pen' || path.tool == 'highlighter') {
+          // 自由绘制
+          for (int i = 0; i < path.points.length - 1; i++) {
+            canvas.drawLine(
+              path.points[i].offset,
+              path.points[i + 1].offset,
+              paint,
+            );
+          }
+        } else if (path.tool == 'line' && path.points.length >= 2) {
+          // 直线
+          canvas.drawLine(path.points.first.offset, path.points.last.offset, paint);
+        } else if (path.tool == 'rectangle' && path.points.length >= 2) {
+          // 矩形
+          final rect = Rect.fromPoints(path.points.first.offset, path.points.last.offset);
+          canvas.drawRect(rect, paint);
+        } else if (path.tool == 'ellipse' && path.points.length >= 2) {
+          // 椭圆
+          final rect = Rect.fromPoints(path.points.first.offset, path.points.last.offset);
+          canvas.drawOval(rect, paint);
+        } else if (path.tool == 'arrow' && path.points.length >= 2) {
+          // 箭头
+          _drawArrow(canvas, path.points.first.offset, path.points.last.offset, paint);
+        }
+      }
+    }
+
+    // 绘制文本
+    if (textPosition != null && textContent != null && textContent!.isNotEmpty) {
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: textContent,
+          style: TextStyle(
+            color: textColor,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(canvas, textPosition!);
+    }
+  }
+
+  void _drawArrow(Canvas canvas, Offset start, Offset end, Paint paint) {
+    // 绘制直线
+    canvas.drawLine(start, end, paint);
+
+    // 绘制箭头头部
+    final angle = (end - start).direction;
+    const arrowLength = 15.0;
+    const arrowAngle = 0.5;
+
+    final arrowEnd1 = end - Offset(
+      arrowLength * cos(angle - arrowAngle),
+      arrowLength * sin(angle - arrowAngle),
+    );
+    final arrowEnd2 = end - Offset(
+      arrowLength * cos(angle + arrowAngle),
+      arrowLength * sin(angle + arrowAngle),
+    );
+
+    canvas.drawLine(end, arrowEnd1, paint);
+    canvas.drawLine(end, arrowEnd2, paint);
+  }
+
 
   @override
   bool shouldRepaint(covariant _SelectionPainter oldDelegate) {
-    return oldDelegate.selectionRect != selectionRect ||
-        oldDelegate.isSelecting != isSelecting;
+    return true;
+    //return oldDelegate.selectionRect != selectionRect ||
+    //    oldDelegate.isSelecting != isSelecting || oldDelegate.paths != paths;
   }
 }

@@ -6,7 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'dart:typed_data';
 
 
-typedef ToolSelectedCallback = void Function(String? tool);
+typedef ToolSelectedCallback = void Function(String tool);
 
 
 class CaptureToolbar extends StatefulWidget {
@@ -19,13 +19,13 @@ class CaptureToolbar extends StatefulWidget {
   final bool canUndo;
   final bool canRedo;
   
-  String? selectedTool;
+  String selectedTool;
   bool showTextInput;
 
 
   CaptureToolbar({
     super.key,
-    this.selectedTool,
+    this.selectedTool = "",
     this.showTextInput = false,
     required this.onToolSelected,
     required this.onUndo,
@@ -154,7 +154,7 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
       message: tooltip,
       child: GestureDetector(
         onTap: () {
-          widget.onToolSelected(isSelected ? null : tool);
+          widget.onToolSelected(isSelected ? "" : tool);
           // setState(() {
           // });
         },
@@ -186,7 +186,7 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
             isSelected: tool['tool'] == widget.selectedTool,
 
           ),
-          SizedBox(height: 15),
+          SizedBox(height: 10),
         ],
       );
     }).toList();
@@ -220,7 +220,7 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
       return Row(
         children: [
           _buildActionButton( action['icon'], action['label'], action['tool'], onpressed: action['enabled'] ? action['action'] : null ),
-          SizedBox(height: 15),
+          SizedBox(height: 10),
         ],
       );
     }).toList();
