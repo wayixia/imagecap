@@ -132,7 +132,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
   // 绘图相关状态
   List<DrawingPath> _paths = [];
-  List<DrawingPath> redoPaths = [];
+  List<DrawingPath> _redoPaths = [];
   Color _selectedColor = Colors.red;
   double strokeWidth = 3.0;
   bool isDrawing = false;
@@ -337,63 +337,17 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           _selectedTool = tool;
         });
       },
-      onUndo: () {
-        print('Undo action');
-      },
-      onRedo: () {
-        print('Redo action');
-      },
-      onClear: () {
-        // setState(() {
-        //   _selectionRect = null;
-        //   _showToolbar = false;
-        // });
-      },
+      onUndo: _undo,
+      onRedo: _redo,
+      onClear: _clearAll,
       onSave: _cropImage,
       onClose: () {
         // Close the capture window
         windowManager.close();
       },
+      canRedo: _redoPaths.isNotEmpty,
+      canUndo: _paths.isNotEmpty,
     );
-//     return Container(
-//   height: 80,
-//   margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-//   decoration: BoxDecoration(
-//     gradient: LinearGradient(
-//       begin: Alignment.centerLeft,
-//       end: Alignment.centerRight,
-//       colors: [Colors.blue, Colors.purple],
-//     ),
-//     borderRadius: BorderRadius.circular(20),
-//     boxShadow: [
-//       BoxShadow(
-//         color: Colors.blue.withOpacity(0.3),
-//         blurRadius: 8,
-//         offset: Offset(0, 4),
-//       ),
-//     ],
-//   ),
-//   child: Row(
-//     children: [
-//       SizedBox(width: 20),
-//       Icon(Icons.arrow_back, color: Colors.white),
-//       Expanded(
-//         child: Center(
-//           child: Text(
-//             '渐变工具条',
-//             style: TextStyle(
-//               color: Colors.white,
-//               fontSize: 20,
-//               fontWeight: FontWeight.bold,
-//             ),
-//           ),
-//         ),
-//       ),
-//       Icon(Icons.more_vert, color: Colors.white),
-//       SizedBox(width: 20),
-//     ],
-//   ),
-// );
   }
 
   void _updateTrackerRect(PointerEvent event) {
@@ -585,9 +539,10 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
     setState(() {
       isDrawing = true;
-      redoPaths.clear();
+      _redoPaths.clear();
       
-      if (_selectedTool == 'pen' || _selectedTool == 'highlighter') {
+      //if (_selectedTool == 'pen' || _selectedTool == 'highlighter') {
+      if (_selectedTool != 'text' ) {
         _paths.add(DrawingPath(
           color: _selectedColor,
           strokeWidth: strokeWidth,
@@ -610,7 +565,8 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     if (!isDrawing || _selectedTool == 'text') return;
 
     setState(() {
-      if (_selectedTool == 'pen' || _selectedTool == 'highlighter') {
+      //if (_selectedTool == 'pen' || _selectedTool == 'highlighter') {
+      if (_selectedTool != 'text') {
         _paths.last.points.add(DrawingPoint(
           offset: details.localPosition,
           color: _selectedColor,
@@ -674,10 +630,32 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     );
   }
 
-  void _resetView() {
-    _transformationController.value = Matrix4.identity();
-    //_clearSelection();
+  // 工具方法
+  void _undo() {
+    if (_paths.isNotEmpty) {
+      setState(() {
+        _redoPaths.add(_paths.removeLast());
+      });
+    }
   }
+
+  void _redo() {
+    if (_redoPaths.isNotEmpty) {
+      setState(() {
+        _paths.add(_redoPaths.removeLast());
+      });
+    }
+  }
+
+  void _clearAll() {
+    setState(() {
+      _paths.clear();
+      _redoPaths.clear();
+      showTextInput = false;
+      //textPosition = null;
+    });
+  }
+
 }
 
 // 自定义绘制选区
@@ -710,7 +688,7 @@ class _SelectionPainter extends CustomPainter {
     final borderPaint = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
+      ..strokeWidth = 1.0;
 
     // 绘制选区矩形
     //canvas.drawRect(selectionRect!, paint);

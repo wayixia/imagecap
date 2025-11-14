@@ -19,11 +19,11 @@ class CaptureToolbar extends StatefulWidget {
   final bool canUndo;
   final bool canRedo;
   
-  String selectedTool;
-  bool showTextInput;
+  final String selectedTool;
+  final bool showTextInput;
 
 
-  CaptureToolbar({
+  const CaptureToolbar({
     super.key,
     this.selectedTool = "",
     this.showTextInput = false,
@@ -44,9 +44,6 @@ class CaptureToolbar extends StatefulWidget {
 }
 
 class _CaptureToolbarState extends State<CaptureToolbar> {
-  //String? _selectedTool;
-  //bool? _showTextInput = false;
-
   @override
   void initState() {
     // TODO: implement initState
@@ -95,57 +92,6 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
         ],
       ),
     );
-    // return Container(
-    //   padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-    //   decoration: BoxDecoration(
-    //     color: Colors.black.withOpacity(0.7),
-    //     borderRadius: BorderRadius.circular(25),
-    //     boxShadow: [
-    //       BoxShadow(
-    //         color: Colors.black.withOpacity(0.3),
-    //         blurRadius: 10,
-    //         offset: Offset(0, 4),
-    //       ),
-    //     ],
-    //   ),
-    //   child: Row(
-    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    //     children: [
-    //       Row(
-    //         children: [
-    //           IconButton(
-    //             icon: Icon(Icons.undo, color: canUndo ? Colors.white : Colors.grey),
-    //             onPressed: canUndo ? onUndo : null,
-    //           ),
-    //           SizedBox(width: 10),
-    //           IconButton(
-    //             icon: Icon(Icons.redo, color: canRedo ? Colors.white : Colors.grey),
-    //             onPressed: canRedo ? onRedo : null,
-    //           ),
-    //           SizedBox(width: 10),
-    //           IconButton(
-    //             icon: Icon(Icons.delete, color: Colors.white),
-    //             onPressed: onClear,
-    //           ),
-    //         ],
-    //       ),
-    //       Row(
-    //         children: [
-    //           IconButton(
-    //             icon: Icon(Icons.save, color: Colors.white),
-    //             onPressed: onSave,
-    //           ),
-    //           SizedBox(width: 10),
-    //           IconButton(
-    //             icon: Icon(Icons.close, color: Colors.white),
-    //             onPressed: onClose,
-    //           ),
-    //         ],
-    //       ),
-    //     ],
-    //   ),
-    // );
-
   }
 
   Widget _buildToolButton(IconData icon, String tooltip, String tool,
@@ -219,7 +165,7 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
     return actions.map((action){
       return Row(
         children: [
-          _buildActionButton( action['icon'], action['label'], action['tool'], onpressed: action['enabled'] ? action['action'] : null ),
+          _buildActionButton( action['icon'], action['label'], action['tool'], onpressed: action['enabled']?action['action']:null ),
           SizedBox(height: 10),
         ],
       );
