@@ -139,7 +139,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   Offset? currentOffset;
   TextEditingController? _textController;
   Offset? _textPosition;
-  bool showTextInput = false;
+  bool _showTextInput = false;
   String _selectedTool = "";
 
 
@@ -326,6 +326,37 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           height: 50,
           child: _toolbarView(),
         ),
+        
+        // 文本输入框
+        if (_showTextInput && _textPosition != null)
+          Positioned(
+            left: _textPosition!.dx,
+            top: _textPosition!.dy,
+            child: Container(
+              width: 200,
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: TextField(
+                controller: _textController,
+                style: TextStyle(color: _selectedColor, fontSize: 16),
+                decoration: InputDecoration(
+                  hintText: '输入文字...',
+                  hintStyle: TextStyle(color: Colors.grey),
+                  border: InputBorder.none,
+                ),
+                autofocus: true,
+                onSubmitted: (value) {
+                  setState(() {
+                    _showTextInput = false;
+                  });
+                },
+              ),
+            ),
+          ),
+
     ];
   }
 
@@ -337,6 +368,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           _selectedTool = tool;
         });
       },
+      showTextInput: _showTextInput,
       onUndo: _undo,
       onRedo: _redo,
       onClear: _clearAll,
@@ -535,7 +567,14 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
  // 绘图相关方法
   void _onPanStart(PointerDownEvent details) {
-    if (_selectedTool == 'text') return;
+    if (_selectedTool == 'text') 
+    {
+      setState(() {
+        //_showTextInput = true;
+        currentOffset = details.localPosition;
+      });
+      return;
+    }
 
     setState(() {
       isDrawing = true;
@@ -580,7 +619,13 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   }
 
   void _onPanEnd(PointerUpEvent details) {
-    if (_selectedTool == 'text') return;
+    if (_selectedTool == 'text') {
+      setState(() {
+        _showTextInput = true;
+        _textPosition = details.localPosition;
+      });
+      return;
+    }
 
     setState(() {
       isDrawing = false;
@@ -651,7 +696,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     setState(() {
       _paths.clear();
       _redoPaths.clear();
-      showTextInput = false;
+      _showTextInput = false;
       //textPosition = null;
     });
   }
