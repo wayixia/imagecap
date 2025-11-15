@@ -117,8 +117,8 @@ class ImageSelectionScreen extends StatefulWidget {
 }
 
 class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
-  final TransformationController _transformationController =
-      TransformationController();
+  // final TransformationController _transformationController =
+  //     TransformationController();
   
   // 选区相关状态
   Rect? _selectionRect;
@@ -141,6 +141,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   Offset? _textPosition;
   bool _showTextInput = false;
   String _selectedTool = "";
+  Offset _drawStartPoint = Offset.zero;
 
 
 
@@ -176,9 +177,39 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     return ( _selectedTool != "" );
   }
 
-  DrawElementTypeHit _drawElementHitTest(Offset point) {
-    return DrawElementTypeHit.hitDrawNone;
+  bool _isInTracker(Offset localPosition) {
+    return _selectionRect?.contains(localPosition)??false;
   }
+
+  Offset _safePosition( Offset localPosition ) {
+    if( _selectionRect == null ) {
+      return localPosition;
+    }
+
+    double dx = 0;
+    double dy = 0;
+    if( localPosition.dx < _selectionRect!.left ) {
+      dx = _selectionRect!.left;
+    } else if( localPosition.dx > _selectionRect!.right ) {
+      dx = _selectionRect!.right;
+    } else {
+      dx = localPosition.dx;
+    }
+
+    if( localPosition.dy < _selectionRect!.top ) {
+      dy = _selectionRect!.top;
+    } else if( localPosition.dy > _selectionRect!.bottom ) {
+      dy = _selectionRect!.bottom;
+    } else {
+      dy = localPosition.dy;
+    }
+    ///print("safePosition($dx,$dy)");
+    return Offset(dx, dy);
+  }
+
+  // DrawElementTypeHit _drawElementHitTest(Offset point) {
+  //   return DrawElementTypeHit.hitDrawNone;
+  // }
 
   TrackerHit _trackerHitTest(Offset point) {
     if (_selectionRect == null) {
@@ -327,36 +358,40 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           child: _toolbarView(),
         ),
         
-        // 文本输入框
-        if (_showTextInput && _textPosition != null)
-          Positioned(
-            left: _textPosition!.dx,
-            top: _textPosition!.dy,
-            child: Container(
-              width: 200,
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(8),
+      // 文本输入框
+      if (_showTextInput && currentOffset != null)
+        Positioned(
+          //left: _textPosition!.dx,
+          left: min(_drawStartPoint.dx, currentOffset!.dx),
+          //top: _textPosition!.dy,
+          top: min( _drawStartPoint.dy, currentOffset!.dy),
+          child: Container(
+            width: (currentOffset!.dx - _drawStartPoint.dx).abs(),
+            height: (currentOffset!.dy - _drawStartPoint.dy).abs(),
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: TextField(
+              maxLines: null,
+              keyboardType: TextInputType.multiline,
+              controller: _textController,
+              style: TextStyle(color: _selectedColor, fontSize: 16),
+              decoration: InputDecoration(
+                hintText: '输入文字...',
+                hintStyle: TextStyle(color: Colors.grey),
+                border: InputBorder.none,
               ),
-              child: TextField(
-                controller: _textController,
-                style: TextStyle(color: _selectedColor, fontSize: 16),
-                decoration: InputDecoration(
-                  hintText: '输入文字...',
-                  hintStyle: TextStyle(color: Colors.grey),
-                  border: InputBorder.none,
-                ),
-                autofocus: true,
-                onSubmitted: (value) {
-                  setState(() {
-                    _showTextInput = false;
-                  });
-                },
-              ),
+              autofocus: true,
+              onSubmitted: (value) {
+                setState(() {
+                  _showTextInput = false;
+                });
+              },
             ),
           ),
-
+        ),
     ];
   }
 
@@ -473,7 +508,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
     if( _isDrawMode() ) {
       // 绘图模式
-      _onPanStart(event);
+      if( _isInTracker(event.localPosition)) {
+        _onPanStart(event);
+      }
     } else {
       // 非绘图模式，移动选区，缩放选区
       if(_currentHit != TrackerHit.hitNothing ) {
@@ -504,7 +541,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     // print('Hit Test: $ht');
     // _setCursor(ht);
     if( _isDrawMode() ) {
-      _onPanUpdate(event);
+      //if( _isInTracker(event.localPosition)) {
+        _onPanUpdate(event);
+      //}
     } else {
       setState(() {
         _updateTrackerRect(event);
@@ -567,10 +606,14 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
  // 绘图相关方法
   void _onPanStart(PointerDownEvent details) {
+
+    _drawStartPoint = details.localPosition;
+
     if (_selectedTool == 'text') 
     {
       setState(() {
-        //_showTextInput = true;
+        isDrawing = true;
+        _showTextInput = true;
         currentOffset = details.localPosition;
       });
       return;
@@ -601,19 +644,23 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   }
 
   void _onPanUpdate(PointerMoveEvent details) {
-    if (!isDrawing || _selectedTool == 'text') return;
+    if (!isDrawing )
+    {  
+      return;
+    }
 
     setState(() {
       //if (_selectedTool == 'pen' || _selectedTool == 'highlighter') {
       if (_selectedTool != 'text') {
         _paths.last.points.add(DrawingPoint(
-          offset: details.localPosition,
+          offset: _safePosition(details.localPosition),
           color: _selectedColor,
           strokeWidth: strokeWidth,
           tool: _selectedTool,
         ));
       } else {
-        currentOffset = details.localPosition;
+        currentOffset = _safePosition(details.localPosition);
+        _showTextInput = true;
       }
     });
   }
@@ -622,7 +669,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     if (_selectedTool == 'text') {
       setState(() {
         _showTextInput = true;
-        _textPosition = details.localPosition;
+        _textPosition = _safePosition(details.localPosition);
       });
       return;
     }
@@ -697,7 +744,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       _paths.clear();
       _redoPaths.clear();
       _showTextInput = false;
-      //textPosition = null;
+      _textPosition = null;
     });
   }
 
