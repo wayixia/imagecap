@@ -74,37 +74,29 @@ class _CaptureToolbarState extends State<CaptureToolbarOptions> {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Row(children: _buildColorButtons(colors),),
+      child: 
+          GridView.count(
+            crossAxisCount: 4, 
+            children: _buildColorButtons(colors))
+          //Row(children: _buildColorButtons(colors),),
           //Row(children: _buildActionButtons(actions),),
-        ],
-      ),
     );
   }
 
   List<Widget> _buildColorButtons(List<Color> colors) {
     return colors.map((color) {
-      return Row(
-        children: [
-          _buildButton(
+      return Center(
+        child: _buildColorButton(
             Icons.check,
             "",
             color,
             isSelected: color == widget.selectedColor,
-
-          ),
-          SizedBox(height: 10),
-          // widget.selectedColor == color
-          //         ? Icon(Icons.check, color: color, size: 18)
-          //         : null,
-          // SizedBox(height: 10),
-        ],
+        ),
       );
     }).toList();
   }
 
-  Widget _buildButton(IconData icon, String tooltip, Color color,
+  Widget _buildColorButton(IconData icon, String tooltip, Color color,
       {bool isSelected = false}) {
     return Tooltip(
       message: tooltip,
@@ -116,11 +108,11 @@ class _CaptureToolbarState extends State<CaptureToolbarOptions> {
           width: 45,
           height: 45,
           decoration: BoxDecoration(
-            color: isSelected ? Colors.blue : Colors.transparent,
+            color: color,
             shape: BoxShape.circle,
           ),
           child: Icon(
-            icon,
+            isSelected?icon:null,
             color: isSelected ? Colors.white : Colors.grey[300],
             size: 22,
           ),

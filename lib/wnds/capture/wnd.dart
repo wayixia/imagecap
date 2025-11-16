@@ -129,6 +129,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   TrackerHit _currentHit = TrackerHit.hitNothing;
   ui.Image? _image;
   bool _showToolbar = false;
+  bool _showToolbarOptions = false;
   Offset _toolbarPosition = Offset.zero;
 
   // 绘图相关状态
@@ -361,7 +362,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       if( _showToolbar && _showToolbarOptions ) 
         Positioned(
           left: _toolbarPosition.dx,
-          top: _toolbarPosition.dy,
+          top: _toolbarPosition.dy+60,
           height: 50,
           child: _toolbarOptionsView(),
         ),
@@ -409,6 +410,11 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       onToolSelected: (tool) {
         setState(() {
           _selectedTool = tool;
+          if(_selectedTool != "" ) {
+            _showToolbarOptions = true;
+          } else {
+            _showToolbarOptions = false;
+          }
         });
       },
       showTextInput: _showTextInput,
@@ -764,7 +770,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   }
 
   void _onColorSelected(Color color) {
-
+    setState(() {
+      _selectedColor = color;
+    });
   }
 
   void _onLineSizeSelected( int size ) {
