@@ -87,11 +87,47 @@ class _CaptureToolbarState extends State<CaptureToolbarOptions> {
     return colors.map((color) {
       return Row(
         children: [
-          widget.selectedColor == color
-                  ? Icon(Icons.check, color: color, size: 18)
-                  : null,
+          _buildButton(
+            Icons.check,
+            "",
+            color,
+            isSelected: color == widget.selectedColor,
+
+          ),
           SizedBox(height: 10),
+          // widget.selectedColor == color
+          //         ? Icon(Icons.check, color: color, size: 18)
+          //         : null,
+          // SizedBox(height: 10),
         ],
       );
     }).toList();
   }
+
+  Widget _buildButton(IconData icon, String tooltip, Color color,
+      {bool isSelected = false}) {
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: () {
+          widget.onColorSelected(color);
+        },
+        child: Container(
+          width: 45,
+          height: 45,
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.blue : Colors.transparent,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: isSelected ? Colors.white : Colors.grey[300],
+            size: 22,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+

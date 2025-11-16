@@ -10,6 +10,7 @@ import 'package:imagecap/wnds/capture/toolbar.dart';
 //import 'package:imagecap/wnds/screenshot_editor.dart';
 import 'package:imagecap/utils/cursor_manager.dart';
 import 'package:imagecap/utils/image_utils.dart';
+import 'package:imagecap/wnds/capture/toolbar_options.dart';
 import 'package:window_manager/window_manager.dart';
 //import 'package:window_manager/window_manager.dart';
 
@@ -357,7 +358,14 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           height: 50,
           child: _toolbarView(),
         ),
-        
+      if( _showToolbar && _showToolbarOptions ) 
+        Positioned(
+          left: _toolbarPosition.dx,
+          top: _toolbarPosition.dy,
+          height: 50,
+          child: _toolbarOptionsView(),
+        ),
+ 
       // 文本输入框
       if (_showTextInput && currentOffset != null)
         Positioned(
@@ -415,6 +423,13 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       canRedo: _redoPaths.isNotEmpty,
       canUndo: _paths.isNotEmpty,
     );
+  }
+
+  Widget _toolbarOptionsView() {
+    return CaptureToolbarOptions(
+      onColorSelected: _onColorSelected, 
+      onFontSizeSelected: _onFontSizeSelected, 
+      onLineSizeSelected: _onLineSizeSelected);
   }
 
   void _updateTrackerRect(PointerEvent event) {
@@ -746,6 +761,18 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       _showTextInput = false;
       _textPosition = null;
     });
+  }
+
+  void _onColorSelected(Color color) {
+
+  }
+
+  void _onLineSizeSelected( int size ) {
+
+  }
+
+  void _onFontSizeSelected( int size ) {
+
   }
 
 }
