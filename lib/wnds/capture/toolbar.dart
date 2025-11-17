@@ -75,7 +75,7 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
+        color: Colors.black.withOpacity(0.5),
         borderRadius: BorderRadius.circular(5),
         boxShadow: [
           BoxShadow(

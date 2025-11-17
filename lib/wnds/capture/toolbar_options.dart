@@ -56,15 +56,15 @@ class _CaptureToolbarState extends State<CaptureToolbarOptions> {
     Colors.blue,
     Colors.indigo,
     Colors.purple,
-    Colors.white,
+    //Colors.white,
     Colors.black,
     ];
  
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+      padding: EdgeInsets.fromLTRB( 10, 10, 10, 0),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
+        color: Colors.black.withOpacity(0.5),
         borderRadius: BorderRadius.circular(5),
         boxShadow: [
           BoxShadow(
@@ -75,26 +75,35 @@ class _CaptureToolbarState extends State<CaptureToolbarOptions> {
         ],
       ),
       child: 
+        SizedBox(
+        height: 60, 
+        width: 240,
+        
+        child:
           GridView.count(
-            crossAxisCount: 4, 
-            children: _buildColorButtons(colors))
-          //Row(children: _buildColorButtons(colors),),
-          //Row(children: _buildActionButtons(actions),),
+            shrinkWrap: true, // 让 GridView 根据内容调整大小
+            physics: NeverScrollableScrollPhysics(), // 禁止滚动[citation:2]
+            crossAxisCount: 8, 
+            mainAxisSpacing: 3, // 主轴方向间距[citation:2]
+            crossAxisSpacing: 0, // 交叉轴方向间距[citation:2]
+            childAspectRatio: 1, // 宽高比，可根据内容调整
+            children: _buildColorButtons(colors)
+        )
+      )
     );
   }
 
   List<Widget> _buildColorButtons(List<Color> colors) {
     return colors.map((color) {
-      return Center(
-        child: _buildColorButton(
+      return  _buildColorButton(
             Icons.check,
             "",
             color,
             isSelected: color == widget.selectedColor,
-        ),
-      );
+        );
     }).toList();
   }
+
 
   Widget _buildColorButton(IconData icon, String tooltip, Color color,
       {bool isSelected = false}) {
@@ -105,11 +114,11 @@ class _CaptureToolbarState extends State<CaptureToolbarOptions> {
           widget.onColorSelected(color);
         },
         child: Container(
-          width: 45,
-          height: 45,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             color: color,
-            shape: BoxShape.circle,
+            shape: BoxShape.rectangle,
           ),
           child: Icon(
             isSelected?icon:null,

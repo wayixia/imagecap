@@ -144,7 +144,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   bool _showTextInput = false;
   String _selectedTool = "";
   Offset _drawStartPoint = Offset.zero;
-
+  double _controlPointSize = 8.0;
 
 
   @override
@@ -218,7 +218,6 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       return TrackerHit.hitNothing;
     }
 
-    const controlPointSize = 18.0;
     final points = {
       TrackerHit.hitTopLeft: _selectionRect!.topLeft,
       TrackerHit.hitTopCenter: _selectionRect!.topCenter,
@@ -234,8 +233,8 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     for (final entry in points.entries) {
       final rect = Rect.fromCenter(
         center: entry.value,
-        width: controlPointSize,
-        height: controlPointSize,
+        width: _controlPointSize,
+        height: _controlPointSize,
       );
       if (rect.contains(point)) {
         return entry.key;
@@ -345,6 +344,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                 textColor: _selectedColor,
                 textPosition: _textPosition,
                 textContent: _textController?.text,
+                controlPointSize: _controlPointSize,
               ),
             ),
           ),
@@ -370,17 +370,18 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       // 文本输入框
       if (_showTextInput && currentOffset != null)
         Positioned(
-          //left: _textPosition!.dx,
-          left: min(_drawStartPoint.dx, currentOffset!.dx),
-          //top: _textPosition!.dy,
-          top: min( _drawStartPoint.dy, currentOffset!.dy),
+          left: _drawStartPoint.dx,
+          //left: min(_drawStartPoint.dx, currentOffset!.dx),
+          top: _drawStartPoint.dy,
+          //top: min( _drawStartPoint.dy, currentOffset!.dy),
           child: Container(
             width: (currentOffset!.dx - _drawStartPoint.dx).abs(),
             height: (currentOffset!.dy - _drawStartPoint.dy).abs(),
-            padding: EdgeInsets.all(8),
+            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 0),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(5),
+              color: Colors.black.withOpacity(0.5),
+              //color: Colors.transparent,
+              borderRadius: BorderRadius.circular(3),
             ),
             child: TextField(
               maxLines: null,
@@ -433,6 +434,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
   Widget _toolbarOptionsView() {
     return CaptureToolbarOptions(
+      selectedColor: _selectedColor,
+      fontSize: 16,
+      lineSize: strokeWidth.toInt(),
       onColorSelected: _onColorSelected, 
       onFontSizeSelected: _onFontSizeSelected, 
       onLineSizeSelected: _onLineSizeSelected);
@@ -795,7 +799,7 @@ class _SelectionPainter extends CustomPainter {
   final Offset? textPosition;
   final String? textContent;
   final Color textColor;
-
+  final double controlPointSize;
   const _SelectionPainter({
     required this.selectionRect,
     required this.isSelecting,
@@ -804,6 +808,7 @@ class _SelectionPainter extends CustomPainter {
     this.textPosition,
     this.textContent,
     required this.textColor,
+    this.controlPointSize = 5,
   });
 
   @override
@@ -812,10 +817,6 @@ class _SelectionPainter extends CustomPainter {
       return;
     }
 
-    final borderPaint = Paint()
-      ..color = Colors.blue
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
 
     // 绘制选区矩形
     //canvas.drawRect(selectionRect!, paint);
@@ -825,16 +826,54 @@ class _SelectionPainter extends CustomPainter {
       // ..style = PaintingStyle.fill;
       canvas.drawImageRect(image!, selectionRect!, selectionRect!, Paint());
     }
-    canvas.drawRect(selectionRect!, borderPaint);
+
 
     //canvas.drawImageRect(image!, selectionRect!, selectionRect!, paint);
 
-    // 绘制选区角落的控制点
+    // 如果正在选择，绘制提示
+    if (isSelecting) {
+      _paintTips(canvas, size);
+    } else {
+      _paintPaths(canvas, size);
+    }
+
+    _paintTracker(canvas, size);
+  }
+
+  void _paintTips( Canvas canvas, Size size) {
+    final textPainter = TextPainter(
+      text: const TextSpan(
+        text: '拖动选择区域',
+        style: TextStyle(
+          color: Colors.white,
+          backgroundColor: Colors.black54,
+          fontSize: 12,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(
+        selectionRect!.left,
+        selectionRect!.top - 20,
+      ),
+    );
+  }
+
+  void _paintTracker( Canvas canvas, Size size) {
+    // paint border and control points
+    final borderPaint = Paint()
+      ..color = Colors.blue
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+    canvas.drawRect(selectionRect!.inflate(2), borderPaint);
+
     final controlPointPaint = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.fill;
 
-    const controlPointSize = 18.0;
     final points = [
       selectionRect!.topLeft,
       selectionRect!.topCenter,
@@ -855,32 +894,6 @@ class _SelectionPainter extends CustomPainter {
         ),
         controlPointPaint,
       );
-    }
-
-    // 如果正在选择，绘制提示
-    if (isSelecting) {
-      final textPainter = TextPainter(
-        text: const TextSpan(
-          text: '拖动选择区域',
-          style: TextStyle(
-            color: Colors.white,
-            backgroundColor: Colors.black54,
-            fontSize: 12,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(
-          selectionRect!.left,
-          selectionRect!.top - 20,
-        ),
-      );
-    }
-    else {
-      _paintPaths(canvas, size);
     }
   }
 
