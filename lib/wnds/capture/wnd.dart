@@ -5,9 +5,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-//import 'package:flutter_drawing_board/flutter_drawing_board.dart';
+import 'package:imagecap/wnds/capture/selection_painter.dart';
 import 'package:imagecap/wnds/capture/toolbar.dart';
-//import 'package:imagecap/wnds/screenshot_editor.dart';
 import 'package:imagecap/utils/cursor_manager.dart';
 import 'package:imagecap/utils/image_utils.dart';
 import 'package:imagecap/wnds/capture/toolbar_options.dart';
@@ -42,9 +41,6 @@ class CaptureWndApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      //home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      //home: RectangleSelectionDemo()
-      //home: ScreenshotEditor(),
       debugShowCheckedModeBanner: false,
       home: ImageSelectionScreen()
     );
@@ -70,7 +66,8 @@ enum TrackerHit
   hitRightCenter, 
   hitBottomCenter, 
   hitLeftCenter, 
-  hitMiddleCenter
+  hitMiddleCenter,
+  hitDrawObject,
 }
 
 enum DrawElementTypeHit {
@@ -83,32 +80,7 @@ enum DrawElementTypeHit {
   hitDrawPen
 }
 
-class DrawingPoint {
-  Offset offset;
-  Color color;
-  double strokeWidth;
-  String tool;
 
-  DrawingPoint({
-    required this.offset,
-    required this.color,
-    required this.strokeWidth,
-    required this.tool,
-  });
-}
-
-class DrawingPath {
-  List<DrawingPoint> points = [];
-  Color color;
-  double strokeWidth;
-  String tool;
-
-  DrawingPath({
-    required this.color,
-    required this.strokeWidth,
-    required this.tool,
-  });
-}
 
 class ImageSelectionScreen extends StatefulWidget {
   const ImageSelectionScreen({super.key});
@@ -133,8 +105,8 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   Offset _toolbarPosition = Offset.zero;
 
   // 绘图相关状态
-  List<DrawingPath> _paths = [];
-  List<DrawingPath> _redoPaths = [];
+  final List<DrawingPath> _paths = [];
+  final List<DrawingPath> _redoPaths = [];
   Color _selectedColor = Colors.red;
   double strokeWidth = 3.0;
   bool isDrawing = false;
@@ -144,7 +116,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   bool _showTextInput = false;
   String _selectedTool = "";
   Offset _drawStartPoint = Offset.zero;
-  double _controlPointSize = 8.0;
+  final double _controlPointSize = 8.0;
 
 
   @override
@@ -176,7 +148,18 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
   bool _isDrawMode()
   {
-    return ( _selectedTool != "" );
+    return ( _selectedTool != "" || _paths.isNotEmpty || _redoPaths.isNotEmpty );
+  }
+
+  DrawingPath? _findDrawingPathAt( Offset point ) {
+    for( var path in _paths.reversed ) {
+      for( var p in path.points.reversed ) {
+        if( p.offset == point ) {
+          return path;
+        }
+      }
+    }
+    return null;
   }
 
   bool _isInTracker(Offset localPosition) {
@@ -242,6 +225,12 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     }
 
     if( _selectionRect!.contains(point) ) {
+      if( _isDrawMode() ) {
+        DrawingPath? path = _findDrawingPathAt( point );
+        if( path != null ) {
+          return TrackerHit.hitDrawObject;
+        }
+      }
       return TrackerHit.hitMiddleCenter;
     }
 
@@ -278,6 +267,10 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           cursor = SystemMouseCursors.move;
         }
         break;
+      case TrackerHit.hitDrawObject:
+        cursor = SystemMouseCursors.move;
+        break;
+
       case TrackerHit.hitNothing:
         cursor = SystemMouseCursors.basic;
         break;
@@ -298,7 +291,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         } else {
           cursor = CustomSystemCursor(key: 'Move');
         }
-      } 
+      } else if( hit == TrackerHit.hitDrawObject ) {
+        cursor = CustomSystemCursor(key: 'Move');
+      }
     }
 
     setState(() {
@@ -336,7 +331,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           child:MouseRegion(
             cursor: _cursor,
             child: CustomPaint(
-              painter: _SelectionPainter(
+              painter: SelectionPainter(
                 image: _image,
                 selectionRect: _selectionRect,
                 isSelecting: _isSelecting,
@@ -578,7 +573,6 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
   void _onPointerHover(PointerHoverEvent event) {
     var ht = _trackerHitTest(event.localPosition);
-    //print('Hit Test: $ht');
     _setCursor(ht);
   }
 
@@ -785,208 +779,5 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
   void _onFontSizeSelected( int size ) {
 
-  }
-
-}
-
-// 自定义绘制选区
-class _SelectionPainter extends CustomPainter {
-  final Rect? selectionRect;
-  final bool isSelecting;
-  final ui.Image? image;
-
-  final List<DrawingPath> paths;
-  final Offset? textPosition;
-  final String? textContent;
-  final Color textColor;
-  final double controlPointSize;
-  const _SelectionPainter({
-    required this.selectionRect,
-    required this.isSelecting,
-    required this.image,
-    required this.paths,
-    this.textPosition,
-    this.textContent,
-    required this.textColor,
-    this.controlPointSize = 5,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (selectionRect == null) {
-      return;
-    }
-
-
-    // 绘制选区矩形
-    //canvas.drawRect(selectionRect!, paint);
-    if( image != null ) {
-      // final paint = Paint()
-      // ..color = Colors.transparent
-      // ..style = PaintingStyle.fill;
-      canvas.drawImageRect(image!, selectionRect!, selectionRect!, Paint());
-    }
-
-
-    //canvas.drawImageRect(image!, selectionRect!, selectionRect!, paint);
-
-    // 如果正在选择，绘制提示
-    if (isSelecting) {
-      _paintTips(canvas, size);
-    } else {
-      _paintPaths(canvas, size);
-    }
-
-    _paintTracker(canvas, size);
-  }
-
-  void _paintTips( Canvas canvas, Size size) {
-    final textPainter = TextPainter(
-      text: const TextSpan(
-        text: '拖动选择区域',
-        style: TextStyle(
-          color: Colors.white,
-          backgroundColor: Colors.black54,
-          fontSize: 12,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset(
-        selectionRect!.left,
-        selectionRect!.top - 20,
-      ),
-    );
-  }
-
-  void _paintTracker( Canvas canvas, Size size) {
-    // paint border and control points
-    final borderPaint = Paint()
-      ..color = Colors.blue
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0;
-    canvas.drawRect(selectionRect!.inflate(2), borderPaint);
-
-    final controlPointPaint = Paint()
-      ..color = Colors.blue
-      ..style = PaintingStyle.fill;
-
-    final points = [
-      selectionRect!.topLeft,
-      selectionRect!.topCenter,
-      selectionRect!.topRight,
-      selectionRect!.centerRight,
-      selectionRect!.bottomRight,
-      selectionRect!.bottomCenter,
-      selectionRect!.bottomLeft,
-      selectionRect!.centerLeft,
-    ];
-
-    for (final point in points) {
-      canvas.drawRect(
-        Rect.fromCenter(
-          center: point,
-          width: controlPointSize,
-          height: controlPointSize,
-        ),
-        controlPointPaint,
-      );
-    }
-  }
-
-
-   void _paintPaths(Canvas canvas, Size size) {
-    // 绘制所有路径
-    for (var path in paths) {
-      final paint = Paint()
-        ..color = path.tool == 'highlighter' 
-            ? path.color.withOpacity(0.3) 
-            : path.color
-        ..strokeWidth = path.strokeWidth
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round
-        ..style = PaintingStyle.stroke;
-
-      if (path.tool == 'highlighter') {
-        paint.blendMode = BlendMode.multiply;
-      }
-
-      if (path.points.isNotEmpty) {
-        if (path.tool == 'pen' || path.tool == 'highlighter') {
-          // 自由绘制
-          for (int i = 0; i < path.points.length - 1; i++) {
-            canvas.drawLine(
-              path.points[i].offset,
-              path.points[i + 1].offset,
-              paint,
-            );
-          }
-        } else if (path.tool == 'line' && path.points.length >= 2) {
-          // 直线
-          canvas.drawLine(path.points.first.offset, path.points.last.offset, paint);
-        } else if (path.tool == 'rectangle' && path.points.length >= 2) {
-          // 矩形
-          final rect = Rect.fromPoints(path.points.first.offset, path.points.last.offset);
-          canvas.drawRect(rect, paint);
-        } else if (path.tool == 'ellipse' && path.points.length >= 2) {
-          // 椭圆
-          final rect = Rect.fromPoints(path.points.first.offset, path.points.last.offset);
-          canvas.drawOval(rect, paint);
-        } else if (path.tool == 'arrow' && path.points.length >= 2) {
-          // 箭头
-          _drawArrow(canvas, path.points.first.offset, path.points.last.offset, paint);
-        }
-      }
-    }
-
-    // 绘制文本
-    if (textPosition != null && textContent != null && textContent!.isNotEmpty) {
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: textContent,
-          style: TextStyle(
-            color: textColor,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
-      textPainter.paint(canvas, textPosition!);
-    }
-  }
-
-  void _drawArrow(Canvas canvas, Offset start, Offset end, Paint paint) {
-    // 绘制直线
-    canvas.drawLine(start, end, paint);
-
-    // 绘制箭头头部
-    final angle = (end - start).direction;
-    const arrowLength = 15.0;
-    const arrowAngle = 0.5;
-
-    final arrowEnd1 = end - Offset(
-      arrowLength * cos(angle - arrowAngle),
-      arrowLength * sin(angle - arrowAngle),
-    );
-    final arrowEnd2 = end - Offset(
-      arrowLength * cos(angle + arrowAngle),
-      arrowLength * sin(angle + arrowAngle),
-    );
-
-    canvas.drawLine(end, arrowEnd1, paint);
-    canvas.drawLine(end, arrowEnd2, paint);
-  }
-
-
-  @override
-  bool shouldRepaint(covariant _SelectionPainter oldDelegate) {
-    return true;
-    //return oldDelegate.selectionRect != selectionRect ||
-    //    oldDelegate.isSelecting != isSelecting || oldDelegate.paths != paths;
   }
 }
