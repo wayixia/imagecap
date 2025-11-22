@@ -151,12 +151,117 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     return ( _selectedTool != "" || _paths.isNotEmpty || _redoPaths.isNotEmpty );
   }
 
-  DrawingPath? _findDrawingPathAt( Offset point ) {
-    for( var path in _paths.reversed ) {
-      for( var p in path.points.reversed ) {
-        if( p.offset == point ) {
+  /// 判断点是否在直线区域内， tolerance为容差范围
+  bool _pointInLineArea( Offset point, Offset lineStart, Offset lineEnd, double tolerance ) {
+    // 处理直线垂直的情况
+    if( lineEnd.dx.toInt() == lineStart.dx.toInt() ) {
+      if( ( point.dx >= lineStart.dx - tolerance ) && ( point.dx <= lineStart.dx + tolerance ) ) {
+        double minY = min( lineStart.dy, lineEnd.dy );
+        double maxY = max( lineStart.dy, lineEnd.dy );
+        if( ( point.dy >= minY - tolerance ) && ( point.dy <= maxY + tolerance ) ) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // 处理直线水平的情况
+    if( lineEnd.dy.toInt() == lineStart.dy.toInt() ) {
+      if( ( point.dy >= lineStart.dy - tolerance ) && ( point.dy <= lineStart.dy + tolerance ) ) {
+        double minX = min( lineStart.dx, lineEnd.dx );
+        double maxX = max( lineStart.dx, lineEnd.dx );
+        if( ( point.dx >= minX - tolerance ) && ( point.dx <= maxX + tolerance ) ) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    double k = (lineEnd.dy - lineStart.dy) / (lineEnd.dx - lineStart.dx + 0.00001);
+    double b = lineStart.dy - k * lineStart.dx;
+    double expectedY = k * point.dx + b;
+    //print("k=$k, b=$b, expectedY=$expectedY, point.dy=${point.dy}, lineStart=$lineStart, lineEnd=$lineEnd"); 
+    if ( ( (expectedY - tolerance ) > point.dy ) ||  ( (expectedY + tolerance) < point.dy ) ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /// 判断点是否在矩形边缘范围内, tolerance为容差范围
+  bool _pointInRectangleArea( Offset point, Offset rectStart, Offset rectEnd, double tolerance ) {
+    double left = min( rectStart.dx, rectEnd.dx );
+    double right = max( rectStart.dx, rectEnd.dx );
+    double top = min( rectStart.dy, rectEnd.dy );
+    double bottom = max( rectStart.dy, rectEnd.dy );
+
+    Rect rect = Rect.fromLTRB(left, top, right, bottom);
+
+    if( rect.inflate(tolerance).contains(point)  && !rect.deflate(tolerance).contains(point) ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  bool _pointInCircleArea( Offset point, Offset center, double radius, double tolerance ) {
+    double distance = (point - center).distance;
+    if( distance <= radius + tolerance && distance >= radius - tolerance ) {
+      return true;
+    }
+    return false;
+  }
+
+
+  DrawingPath? _findDrawingPathAt(Offset point) {
+    for (var path in _paths) {
+      if( path.tool == "arrow" || path.tool == "line" ) {
+        if( path.points.length < 2 ) {
+          continue;
+        }
+        
+        if( _pointInLineArea(point, path.points.first.offset, path.points.last.offset, 5) ) {
           return path;
         }
+      } else if( path.tool == "rectangle" ) {
+        if( path.points.length < 2 ) {
+          continue;
+        }
+
+        if( _pointInRectangleArea(point, path.points.first.offset, path.points.last.offset, 5) ) {
+          return path;
+        }
+      } else if( path.tool == "circle" ) {
+        if( path.points.length < 2 ) {
+          continue;
+        }
+
+        Offset center = Offset(
+          (path.points.first.offset.dx + path.points.last.offset.dx) / 2,
+          (path.points.first.offset.dy + path.points.last.offset.dy) / 2,
+        );
+        double radius = (path.points.first.offset - path.points.last.offset).distance / 2;
+
+        if( _pointInCircleArea(point, center, radius, 5) ) {
+          return path;
+        }
+      } else {
+        // if( path.tool == 'pen' || path.tool == 'highlighter' ) {
+        //   continue; // skip pen and highlighter
+        continue;
+      }
+
+      for (var dp in path.points) {
+        // var d = (dp.offset.dy - point.dy).abs();
+        // print("findDrawingPathAt: y distance = $d");
+        // if( ( dp.offset.dx == point.dx ) && ( (dp.offset.dy - point.dy).abs() <= 5 ) ) {
+        //   return path;
+        // } else if( (dp.offset.dy == point.dy) && ((dp.offset.dx - point.dx ).abs() <= 5) ) {
+        //   return path;
+        // }
+        // if ((dp.offset - point).distance < 10 ) {
+        //   return path;
+        // }
       }
     }
     return null;
