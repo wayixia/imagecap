@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:imagecap/utils/shape_detection.dart';
 import 'package:imagecap/wnds/capture/selection_painter.dart';
 import 'package:imagecap/wnds/capture/toolbar.dart';
 import 'package:imagecap/utils/cursor_manager.dart';
@@ -204,12 +205,18 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     return false;
   }
 
-  bool _pointInCircleArea( Offset point, Offset center, double radius, double tolerance ) {
-    double distance = (point - center).distance;
-    if( distance <= radius + tolerance && distance >= radius - tolerance ) {
-      return true;
+  bool _pointInEllipsArea( Offset point, Offset rectStart, Offset rectEnd,  double tolerance ) {
+    Offset center = Offset(
+          (rectStart.dx + rectEnd.dx) / 2,
+          (rectStart.dy + rectEnd.dy) / 2,
+        );
+    double a = ( rectEnd.dx-rectStart.dx )/2;
+    double b = ( rectEnd.dy-rectStart.dy )/2;
+    if( a>b) {
+      return Ellipse(center, a, b).containsPoint(point, tolerance: tolerance);
+    } else {
+      return Ellipse(center, b, a).containsPoint(point, tolerance: tolerance);
     }
-    return false;
   }
 
 
@@ -231,37 +238,18 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         if( _pointInRectangleArea(point, path.points.first.offset, path.points.last.offset, 5) ) {
           return path;
         }
-      } else if( path.tool == "circle" ) {
+      } else if( path.tool == "ellipse" ) {
         if( path.points.length < 2 ) {
           continue;
         }
-
-        Offset center = Offset(
-          (path.points.first.offset.dx + path.points.last.offset.dx) / 2,
-          (path.points.first.offset.dy + path.points.last.offset.dy) / 2,
-        );
-        double radius = (path.points.first.offset - path.points.last.offset).distance / 2;
-
-        if( _pointInCircleArea(point, center, radius, 5) ) {
+        
+        if( _pointInEllipsArea(point, path.points.first.offset, path.points.last.offset, 5) ) {
           return path;
         }
       } else {
         // if( path.tool == 'pen' || path.tool == 'highlighter' ) {
         //   continue; // skip pen and highlighter
         continue;
-      }
-
-      for (var dp in path.points) {
-        // var d = (dp.offset.dy - point.dy).abs();
-        // print("findDrawingPathAt: y distance = $d");
-        // if( ( dp.offset.dx == point.dx ) && ( (dp.offset.dy - point.dy).abs() <= 5 ) ) {
-        //   return path;
-        // } else if( (dp.offset.dy == point.dy) && ((dp.offset.dx - point.dx ).abs() <= 5) ) {
-        //   return path;
-        // }
-        // if ((dp.offset - point).distance < 10 ) {
-        //   return path;
-        // }
       }
     }
     return null;
