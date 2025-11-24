@@ -621,6 +621,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
   void _onPointerDown(PointerDownEvent event) {
     _currentHit = _trackerHitTest(event.localPosition);
+    _startPoint = event.localPosition; 
 
     if( _isDrawMode() ) {
       // 绘图模式
@@ -667,7 +668,18 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     // _setCursor(ht);
     if( _isDrawMode() ) {
       //if( _isInTracker(event.localPosition)) {
+      if( _selectedPath != null && _currentHit == TrackerHit.hitDrawObject ) {
+        // 移动选中绘图对象
+        setState(() {
+          final delta = event.localPosition - _startPoint!;
+          for( var point in _selectedPath!.points ) {
+            point.offset = point.offset + delta;
+          }
+          _startPoint = event.localPosition;
+        });
+      } else {
         _onPanUpdate(event);
+      }
       //}
     } else {
       setState(() {
@@ -869,6 +881,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       _redoPaths.clear();
       _showTextInput = false;
       _textPosition = null;
+      _selectedPath = null;
     });
   }
 
