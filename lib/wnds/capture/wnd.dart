@@ -212,18 +212,12 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         );
     double a = ( rectEnd.dx-rectStart.dx )/2;
     double b = ( rectEnd.dy-rectStart.dy )/2;
-    if( a>b) {
-      print( Ellipse(center, a, b).getPointRelation(point, tolerance: tolerance) );
-    } else {
-      print( Ellipse(center, b, a).getPointRelation(point, tolerance: tolerance) );
-    }
 
-    return false;
-    // if( a>b) {
-    //   return Ellipse(center, a, b).containsPoint(point, tolerance: tolerance);
-    // } else {
-    //   return Ellipse(center, b, a).containsPoint(point, tolerance: tolerance);
-    // }
+    if( a>b) {
+      return Ellipse(center, a, b).containsPoint(point, tolerance: tolerance);
+    } else {
+      return Ellipse(center, b, a).containsPoint(point, tolerance: tolerance);
+    }
   }
 
 
