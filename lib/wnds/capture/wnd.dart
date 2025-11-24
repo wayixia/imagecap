@@ -108,6 +108,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   // 绘图相关状态
   final List<DrawingPath> _paths = [];
   final List<DrawingPath> _redoPaths = [];
+  DrawingPath? _selectedPath;
   Color _selectedColor = Colors.red;
   double strokeWidth = 3.0;
   bool isDrawing = false;
@@ -222,7 +223,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
 
   DrawingPath? _findDrawingPathAt(Offset point) {
-    for (var path in _paths) {
+    for (var path in _paths.reversed) {
       if( path.tool == "arrow" || path.tool == "line" ) {
         if( path.points.length < 2 ) {
           continue;
@@ -430,6 +431,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                 selectionRect: _selectionRect,
                 isSelecting: _isSelecting,
                 paths: _paths, 
+                selectedPath: _selectedPath,
                 textColor: _selectedColor,
                 textPosition: _textPosition,
                 textContent: _textController?.text,
@@ -623,7 +625,16 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     if( _isDrawMode() ) {
       // 绘图模式
       if( _isInTracker(event.localPosition)) {
-        _onPanStart(event);
+        if( _currentHit == TrackerHit.hitDrawObject ) {
+          // 点击到绘图对象上
+          DrawingPath? path = _findDrawingPathAt(event.localPosition);
+          _selectedPath = path;
+          setState(() {
+            
+          });
+        } else {
+          _onPanStart(event);
+        }
       }
     } else {
       // 非绘图模式，移动选区，缩放选区
