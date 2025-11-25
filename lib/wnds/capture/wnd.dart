@@ -155,6 +155,14 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
   /// 判断点是否在直线区域内， tolerance为容差范围
   bool _pointInLineArea( Offset point, Offset lineStart, Offset lineEnd, double tolerance ) {
+    // 首先检查点是否在直线的包围盒内
+    if( point.dx < min(lineStart.dx, lineEnd.dx) - tolerance ||
+        point.dx > max(lineStart.dx, lineEnd.dx) + tolerance ||
+        point.dy < min(lineStart.dy, lineEnd.dy) - tolerance ||
+        point.dy > max(lineStart.dy, lineEnd.dy) + tolerance ) {
+      return false;
+    }
+    
     // 处理直线垂直的情况
     if( lineEnd.dx.toInt() == lineStart.dx.toInt() ) {
       if( ( point.dx >= lineStart.dx - tolerance ) && ( point.dx <= lineStart.dx + tolerance ) ) {
@@ -634,6 +642,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
             
           });
         } else {
+          _selectedPath = null;
           _onPanStart(event);
         }
       }

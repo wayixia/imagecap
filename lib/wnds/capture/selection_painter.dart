@@ -82,7 +82,7 @@ class SelectionPainter extends CustomPainter {
       _paintPaths(canvas, size);
     }
 
-    _paintTracker(canvas, size);
+    _paintTracker(canvas, size, selectionRect!, drawBorder: true, drawResize: paths.isEmpty);
   }
 
   void _paintTips( Canvas canvas, Size size) {
@@ -107,38 +107,69 @@ class SelectionPainter extends CustomPainter {
     );
   }
 
-  void _paintTracker( Canvas canvas, Size size) {
+  void _paintTracker( Canvas canvas, Size size, Rect trackRect, { 
+      Color color=Colors.blue, 
+      bool drawResize=true, 
+      bool drawBorder = true, 
+      String type="rectangle", 
+      List<DrawingPoint>? linepoints } ) {
     // paint border and control points
     final borderPaint = Paint()
-      ..color = Colors.blue
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
-    canvas.drawRect(selectionRect!.inflate(2), borderPaint);
+    if( drawBorder ) {
+      canvas.drawRect(trackRect.inflate(2), borderPaint);
+    }
 
-    final controlPointPaint = Paint()
-      ..color = Colors.blue
-      ..style = PaintingStyle.fill;
+    if( drawResize ) {
+      final controlPointPaint = Paint()
+        ..color = Colors.blue
+        ..style = PaintingStyle.fill;
 
-    final points = [
-      selectionRect!.topLeft,
-      selectionRect!.topCenter,
-      selectionRect!.topRight,
-      selectionRect!.centerRight,
-      selectionRect!.bottomRight,
-      selectionRect!.bottomCenter,
-      selectionRect!.bottomLeft,
-      selectionRect!.centerLeft,
-    ];
+      final points;
+      
+      if( type == "rectangle") {
+        points = [
+          trackRect.topLeft,
+          trackRect.topCenter,
+          trackRect.topRight,
+          trackRect.centerRight,
+          trackRect.bottomRight,
+          trackRect.bottomCenter,
+          trackRect.bottomLeft,
+          trackRect.centerLeft,
+        ];
+      } else if( type == "ellipse") {
+        points = [
+          Offset(trackRect.center.dx, trackRect.top),
+          Offset(trackRect.right, trackRect.center.dy),
+          Offset(trackRect.center.dx, trackRect.bottom),
+          Offset(trackRect.left, trackRect.center.dy),
+        ];
+      } else if(type=="line" || type=="arrow") {
+        points = linepoints != null && linepoints.length >= 2 ? [
+          linepoints.first.offset,
+          linepoints.last.offset,
+        ] : [
+          trackRect.topLeft,
+          trackRect.bottomRight,
+        ];
+      } else {
+        return;
+        points = [];
+      }
 
-    for (final point in points) {
-      canvas.drawRect(
-        Rect.fromCenter(
-          center: point,
-          width: controlPointSize,
-          height: controlPointSize,
-        ),
-        controlPointPaint,
-      );
+      for (final point in points) {
+        canvas.drawRect(
+          Rect.fromCenter(
+            center: point,
+            width: controlPointSize,
+            height: controlPointSize,
+          ),
+          controlPointPaint,
+        );
+      }
     }
   }
 
@@ -221,7 +252,13 @@ class SelectionPainter extends CustomPainter {
       //   }
       // }
 
-      canvas.drawRect(boundingRect.inflate(selectedPath!.strokeWidth-1), borderPaint);
+      //canvas.drawRect(boundingRect.inflate(selectedPath!.strokeWidth-1), borderPaint);
+      _paintTracker(canvas, size, boundingRect, 
+        color: Colors.brown, 
+        drawResize: true, 
+        drawBorder: false, 
+        type: selectedPath!.tool,
+        linepoints: selectedPath!.points,);
     }
   }
 
