@@ -74,7 +74,7 @@ enum TrackerHit
   hitDrawRectangleTopRight, 
   hitDrawRectangleBottomRight, 
   hitDrawRectangleBottomLeft,
-  htDrawRectangleTopCenter, 
+  hitDrawRectangleTopCenter, 
   hitDrawRectangleRightCenter, 
   hitDrawRectangleBottomCenter, 
   hitDrawRectangleLeftCenter, 
