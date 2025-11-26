@@ -69,6 +69,23 @@ enum TrackerHit
   hitLeftCenter, 
   hitMiddleCenter,
   hitDrawObject,
+  
+  hitDrawRectangleTopLeft, 
+  hitDrawRectangleTopRight, 
+  hitDrawRectangleBottomRight, 
+  hitDrawRectangleBottomLeft,
+  htDrawRectangleTopCenter, 
+  hitDrawRectangleRightCenter, 
+  hitDrawRectangleBottomCenter, 
+  hitDrawRectangleLeftCenter, 
+  
+  hitDrawEllipseTopCenter,
+  hitDrawEllipseLeftCenter,
+  hitDrawEllipseBottomCenter,
+  hitDrawEllipseRightCenter,
+
+  hitDrawLineStart,  // line or arrow start point
+  hitDrawLineEnd, // line or arrow end point
 }
 
 enum DrawElementTypeHit {
@@ -221,7 +238,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         );
     double a = ( rectEnd.dx-rectStart.dx )/2;
     double b = ( rectEnd.dy-rectStart.dy )/2;
-
+    // @todo 垂直的长轴处理还有问题
     if( a>b) {
       return Ellipse(center, a, b).containsPoint(point, tolerance: tolerance);
     } else {
@@ -253,6 +270,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           continue;
         }
         
+
         if( _pointInEllipsArea(point, path.points.first.offset, path.points.last.offset, 5) ) {
           return path;
         }
@@ -295,9 +313,56 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     return Offset(dx, dy);
   }
 
-  // DrawElementTypeHit _drawElementHitTest(Offset point) {
-  //   return DrawElementTypeHit.hitDrawNone;
-  // }
+
+  Map<TrackerHit, Offset>? _getDrawTrackerPoints( String type, List<DrawingPoint>? linepoints, double controlPointSize ) {
+    final Map<TrackerHit, Offset> points;
+
+    if( type == "line" || type == "arrow" ) {
+      points = {
+        TrackerHit.hitDrawLineStart: linepoints != null && linepoints.length >= 2 ? linepoints.first.offset : _selectionRect!.topLeft,
+        TrackerHit.hitDrawLineEnd: linepoints != null && linepoints.length >= 2 ? linepoints.last.offset : _selectionRect!.bottomRight,
+      };
+    } else if( type == "ellipse") {
+      points = {
+        TrackerHit.hitDrawEllipseTopCenter: Offset(_selectionRect!.center.dx, _selectionRect!.top),
+        TrackerHit.hitDrawEllipseRightCenter: Offset(_selectionRect!.right, _selectionRect!.center.dy),
+        TrackerHit.hitDrawEllipseBottomCenter: Offset(_selectionRect!.center.dx, _selectionRect!.bottom),
+        TrackerHit.hitDrawEllipseLeftCenter: Offset(_selectionRect!.left, _selectionRect!.center.dy),
+      };
+    } else if( type == "rectangle" ) {
+      points = {
+        TrackerHit.hitDrawRectangleTopLeft: _selectionRect!.topLeft,
+        TrackerHit.hitDrawRectangleTopCenter: _selectionRect!.topCenter,
+        TrackerHit.hitDrawRectangleTopRight: _selectionRect!.topRight,
+        TrackerHit.hitDrawRectangleRightCenter: _selectionRect!.centerRight,
+        TrackerHit.hitDrawRectangleBottomRight: _selectionRect!.bottomRight,
+        TrackerHit.hitDrawRectangleBottomCenter: _selectionRect!.bottomCenter,
+        TrackerHit.hitDrawRectangleBottomLeft: _selectionRect!.bottomLeft,
+        TrackerHit.hitDrawRectangleLeftCenter: _selectionRect!.centerLeft,
+      };
+    } else {
+      return null;
+    }
+
+    return points;
+  }
+
+  bool _isDrawTrackerHit( TrackerHit hit ) {
+    return hit == TrackerHit.hitDrawLineStart ||
+           hit == TrackerHit.hitDrawLineEnd ||
+           hit == TrackerHit.hitDrawEllipseTopCenter ||
+           hit == TrackerHit.hitDrawEllipseRightCenter ||
+           hit == TrackerHit.hitDrawEllipseBottomCenter ||
+           hit == TrackerHit.hitDrawEllipseLeftCenter ||
+           hit == TrackerHit.hitDrawRectangleTopLeft ||
+           hit == TrackerHit.hitDrawRectangleTopCenter ||
+           hit == TrackerHit.hitDrawRectangleTopRight ||
+           hit == TrackerHit.hitDrawRectangleRightCenter ||
+           hit == TrackerHit.hitDrawRectangleBottomRight ||
+           hit == TrackerHit.hitDrawRectangleBottomCenter ||
+           hit == TrackerHit.hitDrawRectangleBottomLeft ||
+           hit == TrackerHit.hitDrawRectangleLeftCenter;
+  }
 
   TrackerHit _trackerHitTest(Offset point) {
     if (_selectionRect == null) {
@@ -329,6 +394,23 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
     if( _selectionRect!.contains(point) ) {
       if( _isDrawMode() ) {
+        // 检测是否在绘图对象的选区上
+        if( _selectedPath != null ) {
+          Map<TrackerHit, Offset>? drawPoints = _getDrawTrackerPoints( _selectedPath!.tool, _selectedPath!.points, _controlPointSize );
+          if( drawPoints != null ) {
+            for (final entry in drawPoints.entries) {
+              final rect = Rect.fromCenter(
+                center: entry.value,
+                width: _controlPointSize,
+                height: _controlPointSize,
+              );
+              if (rect.contains(point)) {
+                return entry.key;
+              }
+            }
+          }
+          //return TrackerHit.hitDrawObject;
+        }
         DrawingPath? path = _findDrawingPathAt( point );
         if( path != null ) {
           return TrackerHit.hitDrawObject;
@@ -344,23 +426,31 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     MouseCursor cursor;
     switch (hit) {
       case TrackerHit.hitTopLeft:
+      case TrackerHit.hitDrawRectangleTopLeft:
         cursor = SystemMouseCursors.resizeUpLeft;
         break;
       case TrackerHit.hitBottomRight:
+      case TrackerHit.hitDrawRectangleBottomRight:
         cursor = SystemMouseCursors.resizeDownRight;
         break; 
       case TrackerHit.hitTopRight:
+      case TrackerHit.hitDrawRectangleTopRight:
         cursor = SystemMouseCursors.resizeUpRight;
         break;
       case TrackerHit.hitBottomLeft:
+      case TrackerHit.hitDrawRectangleBottomLeft:
         cursor = SystemMouseCursors.resizeDownRight;
         break;
       case TrackerHit.hitTopCenter:
       case TrackerHit.hitBottomCenter:
+      case TrackerHit.hitDrawRectangleTopCenter:
+      case TrackerHit.hitDrawRectangleBottomCenter:
         cursor = SystemMouseCursors.resizeUpDown;
         break;
       case TrackerHit.hitLeftCenter:
       case TrackerHit.hitRightCenter:
+      case TrackerHit.hitDrawRectangleLeftCenter:
+      case TrackerHit.hitDrawRectangleRightCenter:
         cursor = SystemMouseCursors.resizeLeftRight;
         break;
       case TrackerHit.hitMiddleCenter:
@@ -370,8 +460,22 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           cursor = SystemMouseCursors.move;
         }
         break;
+      
       case TrackerHit.hitDrawObject:
         cursor = SystemMouseCursors.move;
+        break;
+
+      case TrackerHit.hitDrawEllipseTopCenter:
+      case TrackerHit.hitDrawEllipseBottomCenter:
+        cursor = SystemMouseCursors.resizeUpDown;
+        break;
+      case TrackerHit.hitDrawEllipseLeftCenter:
+      case TrackerHit.hitDrawEllipseRightCenter:
+        cursor = SystemMouseCursors.resizeLeftRight;
+        break;
+      case TrackerHit.hitDrawLineStart:
+      case TrackerHit.hitDrawLineEnd:
+        cursor = SystemMouseCursors.basic;
         break;
 
       case TrackerHit.hitNothing:
@@ -630,11 +734,11 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   void _onPointerDown(PointerDownEvent event) {
     _currentHit = _trackerHitTest(event.localPosition);
     _startPoint = event.localPosition; 
-
+    print('Pointer Down at ${event.localPosition}, hit=$_currentHit');
     if( _isDrawMode() ) {
       // 绘图模式
       if( _isInTracker(event.localPosition)) {
-        if( _currentHit == TrackerHit.hitDrawObject ) {
+        if( _currentHit == TrackerHit.hitDrawObject || _isDrawTrackerHit( _currentHit ) ) {
           // 点击到绘图对象上
           DrawingPath? path = _findDrawingPathAt(event.localPosition);
           _selectedPath = path;
@@ -677,15 +781,41 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     // _setCursor(ht);
     if( _isDrawMode() ) {
       //if( _isInTracker(event.localPosition)) {
-      if( _selectedPath != null && _currentHit == TrackerHit.hitDrawObject ) {
-        // 移动选中绘图对象
-        setState(() {
+      if( _selectedPath != null ) {
+        if(_currentHit == TrackerHit.hitDrawObject ) {
+          // 移动选中绘图对象
+          setState(() {
           final delta = event.localPosition - _startPoint!;
           for( var point in _selectedPath!.points ) {
             point.offset = point.offset + delta;
           }
           _startPoint = event.localPosition;
-        });
+          });
+        } else if( _isDrawTrackerHit( _currentHit ) ) {
+          print("move draw tracker hit: $_currentHit");
+          // 调整绘图对象大小
+          setState(() {
+            if( _currentHit == TrackerHit.hitDrawLineStart ) {
+              // 调整线条起点
+              _selectedPath!.points.first.offset = event.localPosition;
+            } else if( _currentHit == TrackerHit.hitDrawLineEnd ) {
+              // 调整线条终点
+              _selectedPath!.points.last.offset = event.localPosition;
+            } else if( _currentHit == TrackerHit.hitDrawRectangleTopLeft ) {
+              // 调整矩形左上角
+              _selectedPath!.points[0].offset = event.localPosition;
+            } else if( _currentHit == TrackerHit.hitDrawRectangleBottomRight ) {
+              // 调整矩形右下角
+              _selectedPath!.points[1].offset = event.localPosition;
+            } else if( _currentHit == TrackerHit.hitDrawEllipseTopCenter ) {
+              // 调整椭圆上侧中点
+              _selectedPath!.points[0].offset = Offset( _selectedPath!.points[0].offset.dx, event.localPosition.dy);
+            } else if( _currentHit == TrackerHit.hitDrawEllipseBottomCenter ) {
+              // 调整椭圆下侧中点
+              _selectedPath!.points[1].offset = Offset( _selectedPath!.points[1].offset.dx, event.localPosition.dy);
+            }
+          });
+        }
       } else {
         _onPanUpdate(event);
       }

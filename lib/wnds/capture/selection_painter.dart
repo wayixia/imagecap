@@ -30,6 +30,46 @@ class DrawingPath {
     required this.strokeWidth,
     required this.tool,
   });
+
+  List<Offset>? getTrackerPoints() {
+    if( points.length < 2 ) {
+      return null;
+    }
+
+    Rect trackRect = Rect.fromPoints(points.first.offset, points.last.offset);
+     final List<Offset> tackerpoints;
+      
+      if( tool == "rectangle") {
+        tackerpoints = [
+          trackRect.topLeft,
+          trackRect.topCenter,
+          trackRect.topRight,
+          trackRect.centerRight,
+          trackRect.bottomRight,
+          trackRect.bottomCenter,
+          trackRect.bottomLeft,
+          trackRect.centerLeft,
+        ];
+      } else if( tool == "ellipse") {
+        tackerpoints = [
+          Offset(trackRect.center.dx, trackRect.top),
+          Offset(trackRect.right, trackRect.center.dy),
+          Offset(trackRect.center.dx, trackRect.bottom),
+          Offset(trackRect.left, trackRect.center.dy),
+        ];
+      } else if( tool =="line" || tool =="arrow") {
+        tackerpoints = points.length >= 2 ? [
+          points.first.offset,
+          points.last.offset,
+        ] : [
+          trackRect.topLeft,
+          trackRect.bottomRight,
+        ];
+      } else {
+        return null;
+      }
+    return tackerpoints;
+  }
 }
 
 // 自定义绘制选区
@@ -127,7 +167,7 @@ class SelectionPainter extends CustomPainter {
         ..color = Colors.blue
         ..style = PaintingStyle.fill;
 
-      final points;
+      final List points;
       
       if( type == "rectangle") {
         points = [
