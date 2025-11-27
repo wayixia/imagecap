@@ -5,6 +5,50 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 
+// Hit-Test codes
+enum TrackerHit
+{
+	hitNothing,
+	hitTopLeft, 
+  hitTopRight, 
+  hitBottomRight, 
+  hitBottomLeft,
+	hitTopCenter, 
+  hitRightCenter, 
+  hitBottomCenter, 
+  hitLeftCenter, 
+  hitMiddleCenter,
+  hitDrawObject,
+  
+  hitDrawRectangleTopLeft, 
+  hitDrawRectangleTopRight, 
+  hitDrawRectangleBottomRight, 
+  hitDrawRectangleBottomLeft,
+  hitDrawRectangleTopCenter, 
+  hitDrawRectangleRightCenter, 
+  hitDrawRectangleBottomCenter, 
+  hitDrawRectangleLeftCenter, 
+  
+  hitDrawEllipseTopCenter,
+  hitDrawEllipseLeftCenter,
+  hitDrawEllipseBottomCenter,
+  hitDrawEllipseRightCenter,
+
+  hitDrawLineStart,  // line or arrow start point
+  hitDrawLineEnd, // line or arrow end point
+}
+
+enum DrawElementTypeHit {
+  hitDrawNone,
+  hitDrawText,
+  hitDrawLine,
+  hitDrawRectangle,
+  hitDrawCircle,
+  hitDrawArrow,
+  hitDrawPen
+}
+
+
 class DrawingPoint {
   Offset offset;
   Color color;
@@ -31,43 +75,44 @@ class DrawingPath {
     required this.tool,
   });
 
-  List<Offset>? getTrackerPoints() {
+  Map<TrackerHit, Offset>? getTrackerPoints() {
     if( points.length < 2 ) {
       return null;
     }
 
     Rect trackRect = Rect.fromPoints(points.first.offset, points.last.offset);
-     final List<Offset> tackerpoints;
+    final Map< TrackerHit, Offset> tackerpoints;
       
-      if( tool == "rectangle") {
-        tackerpoints = [
-          trackRect.topLeft,
-          trackRect.topCenter,
-          trackRect.topRight,
-          trackRect.centerRight,
-          trackRect.bottomRight,
-          trackRect.bottomCenter,
-          trackRect.bottomLeft,
-          trackRect.centerLeft,
-        ];
-      } else if( tool == "ellipse") {
-        tackerpoints = [
-          Offset(trackRect.center.dx, trackRect.top),
-          Offset(trackRect.right, trackRect.center.dy),
-          Offset(trackRect.center.dx, trackRect.bottom),
-          Offset(trackRect.left, trackRect.center.dy),
-        ];
-      } else if( tool =="line" || tool =="arrow") {
-        tackerpoints = points.length >= 2 ? [
-          points.first.offset,
-          points.last.offset,
-        ] : [
-          trackRect.topLeft,
-          trackRect.bottomRight,
-        ];
-      } else {
-        return null;
-      }
+    if( tool == "rectangle") {
+      tackerpoints = {
+        TrackerHit.hitDrawRectangleTopLeft : trackRect.topLeft,
+        TrackerHit.hitDrawRectangleTopCenter :trackRect.topCenter,
+        TrackerHit.hitDrawRectangleTopRight :trackRect.topRight,
+        TrackerHit.hitDrawRectangleRightCenter :trackRect.centerRight,
+        TrackerHit.hitDrawRectangleBottomRight :trackRect.bottomRight,
+        TrackerHit.hitDrawRectangleBottomCenter :trackRect.bottomCenter,
+        TrackerHit.hitDrawRectangleBottomLeft :trackRect.bottomLeft,
+        TrackerHit.hitDrawRectangleLeftCenter :trackRect.centerLeft,
+      };
+    } else if( tool == "ellipse") {
+      tackerpoints = {
+        TrackerHit.hitDrawEllipseTopCenter: Offset(trackRect.center.dx, trackRect.top),
+        TrackerHit.hitDrawEllipseRightCenter: Offset(trackRect.right, trackRect.center.dy),
+        TrackerHit.hitDrawEllipseBottomCenter: Offset(trackRect.center.dx, trackRect.bottom),
+        TrackerHit.hitDrawEllipseLeftCenter: Offset(trackRect.left, trackRect.center.dy),
+      };
+    } else if( tool =="line" || tool =="arrow") {
+      tackerpoints = points.length >= 2 ? {
+        TrackerHit.hitDrawLineStart: points.first.offset,
+        TrackerHit.hitDrawLineEnd: points.last.offset,
+       } : {
+        TrackerHit.hitDrawLineStart: trackRect.topLeft,
+        TrackerHit.hitDrawLineEnd: trackRect.bottomRight,
+      };
+    } else {
+      return null;
+    }
+    
     return tackerpoints;
   }
 }
