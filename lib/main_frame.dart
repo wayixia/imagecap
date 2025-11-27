@@ -125,13 +125,13 @@ class _MainFrameState extends State<MainFrame> {
                           onPressed: () { 
                             // Add your onPressed code here!
                             if( _selectedIndex == 0 ) {
-                              print('ColorPicker Add');
+                              debugPrint('ColorPicker Add');
 
                             } else if( _selectedIndex == 1 ) {
-                              print('ScreenCaptrue Add');
+                              debugPrint('ScreenCaptrue Add');
                               doCaptureScreen();
                             } else if( _selectedIndex == 2 ) {
-                              print('Settings Add');
+                              debugPrint('Settings Add');
                             }
                           },
                           mini: true, 

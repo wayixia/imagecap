@@ -1,9 +1,5 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'dart:ui' as ui;
-import 'package:flutter/rendering.dart';
-import 'dart:typed_data';
 
 
 typedef ColorSelectedCallback = void Function(Color color);

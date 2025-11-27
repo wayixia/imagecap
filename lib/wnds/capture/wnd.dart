@@ -151,7 +151,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         _image = image;
       });
     } catch (e) {
-      print('Error loading image: $e');
+      debugPrint('Error loading image: $e');
     }
   }
 
@@ -239,11 +239,11 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     double a = ( rectEnd.dx-rectStart.dx )/2;
     double b = ( rectEnd.dy-rectStart.dy )/2;
     // @todo 垂直的长轴处理还有问题
-    if( a>b) {
+    //if( a>b) {
       return Ellipse(center, a, b).containsPoint(point, tolerance: tolerance);
-    } else {
-      return Ellipse(center, b, a).containsPoint(point, tolerance: tolerance);
-    }
+    //} else {
+    //  return Ellipse(center, b, a).containsPoint(point, tolerance: tolerance);
+    //}
   }
 
 
@@ -734,7 +734,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   void _onPointerDown(PointerDownEvent event) {
     _currentHit = _trackerHitTest(event.localPosition);
     _startPoint = event.localPosition; 
-    print('Pointer Down at ${event.localPosition}, hit=$_currentHit');
+    //print('Pointer Down at ${event.localPosition}, hit=$_currentHit');
     if( _isDrawMode() ) {
       // 绘图模式
       if( _isInTracker(event.localPosition)) {
@@ -792,7 +792,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           _startPoint = event.localPosition;
           });
         } else if( _isDrawTrackerHit( _currentHit ) ) {
-          print("move draw tracker hit: $_currentHit");
+          //print("move draw tracker hit: $_currentHit");
           // 调整绘图对象大小
           setState(() {
             if( _currentHit == TrackerHit.hitDrawLineStart ) {
@@ -873,7 +873,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         );
         _showToolbar = true;
         _toolbarPosition = Offset( _selectionRect!.left, _selectionRect!.bottom + 10);
-        print(_toolbarPosition);
+        //print(_toolbarPosition);
       }
     });
   }

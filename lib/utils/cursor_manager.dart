@@ -10,7 +10,7 @@ class CursorManager {
     try {
       await _channel.invokeMethod('setCrosshairCursor');
     } on PlatformException catch (e) {
-      print("Failed to set cursor: '${e.message}'.");
+      debugPrint("Failed to set cursor: '${e.message}'.");
     }
   }
 
@@ -18,7 +18,7 @@ class CursorManager {
     try {
       await _channel.invokeMethod('resetCursor');
     } on PlatformException catch (e) {
-      print("Failed to reset cursor: '${e.message}'.");
+      debugPrint("Failed to reset cursor: '${e.message}'.");
     }
   }
 
@@ -26,7 +26,7 @@ class CursorManager {
     try {
       await _channel.invokeMethod('setCustomCursor', {'cursorKey': cursorKey});
     } on PlatformException catch (e) {
-      print("Failed to set custom cursor: '${e.message}'.");
+      debugPrint("Failed to set custom cursor: '${e.message}'.");
     }
   }
 }
@@ -48,8 +48,7 @@ class CustomSystemCursor extends MouseCursor {
 
 class _CustomCursorSession extends MouseCursorSession {
   _CustomCursorSession(
-      CustomSystemCursor cursor, int device)
-      : super(cursor, device);
+      CustomSystemCursor super.cursor, super.device);
 
   @override
   CustomSystemCursor get cursor =>

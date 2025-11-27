@@ -197,7 +197,6 @@ class SelectionPainter extends CustomPainter {
         ];
       } else {
         return;
-        points = [];
       }
 
       for (final point in points) {
@@ -277,22 +276,8 @@ class SelectionPainter extends CustomPainter {
 
     if(selectedPath != null) {
       // 绘制选中路径的边框
-      final borderPaint = Paint()
-        ..color = Colors.black
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0;
-
       Rect boundingRect;
       boundingRect = Rect.fromPoints(selectedPath!.points.first.offset, selectedPath!.points.last.offset);
-      // for (var point in selectedPath!.points) {
-      //   if (boundingRect == null) {
-      //     boundingRect = Rect.fromLTWH(point.offset.dx, point.offset.dy, 0, 0);
-      //   } else {
-      //     boundingRect = boundingRect.expandToInclude(Rect.fromLTWH(point.offset.dx, point.offset.dy, 0, 0));
-      //   }
-      // }
-
-      //canvas.drawRect(boundingRect.inflate(selectedPath!.strokeWidth-1), borderPaint);
       _paintTracker(canvas, size, boundingRect, 
         color: Colors.brown, 
         drawResize: true, 
