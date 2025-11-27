@@ -181,7 +181,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     }
     
     // 处理直线垂直的情况
-    if( lineEnd.dx.toInt() == lineStart.dx.toInt() ) {
+    if( lineEnd.dx == lineStart.dx ) {
       if( ( point.dx >= lineStart.dx - tolerance ) && ( point.dx <= lineStart.dx + tolerance ) ) {
         double minY = min( lineStart.dy, lineEnd.dy );
         double maxY = max( lineStart.dy, lineEnd.dy );
@@ -193,7 +193,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     }
 
     // 处理直线水平的情况
-    if( lineEnd.dy.toInt() == lineStart.dy.toInt() ) {
+    if( lineEnd.dy == lineStart.dy ) {
       if( ( point.dy >= lineStart.dy - tolerance ) && ( point.dy <= lineStart.dy + tolerance ) ) {
         double minX = min( lineStart.dx, lineEnd.dx );
         double maxX = max( lineStart.dx, lineEnd.dx );
@@ -204,25 +204,25 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       return false;
     }
 
-    double k = (lineEnd.dy - lineStart.dy) / (lineEnd.dx - lineStart.dx + 0.00001);
+    double k = (lineEnd.dy - lineStart.dy) / (lineEnd.dx - lineStart.dx);
     double b = lineStart.dy - k * lineStart.dx;
     double expectedY = k * point.dx + b;
     //print("k=$k, b=$b, expectedY=$expectedY, point.dy=${point.dy}, lineStart=$lineStart, lineEnd=$lineEnd"); 
-    if ( ( (expectedY - tolerance ) > point.dy ) ||  ( (expectedY + tolerance) < point.dy ) ) {
-      return false;
+    if( (point.dy >= (expectedY - tolerance) ) && point.dy <= ( expectedY + tolerance) ) {
+      return true;
     }
 
-    return true;
+    double expectedX = (point.dy - b) / k;
+    if( (point.dx >= (expectedX - tolerance) ) && point.dx <= ( expectedX + tolerance) ) {
+      return true;
+    }
+
+    return false;
   }
 
   /// 判断点是否在矩形边缘范围内, tolerance为容差范围
   bool _pointInRectangleArea( Offset point, Offset rectStart, Offset rectEnd, double tolerance ) {
-    double left = min( rectStart.dx, rectEnd.dx );
-    double right = max( rectStart.dx, rectEnd.dx );
-    double top = min( rectStart.dy, rectEnd.dy );
-    double bottom = max( rectStart.dy, rectEnd.dy );
-
-    Rect rect = Rect.fromLTRB(left, top, right, bottom);
+    Rect rect = Rect.fromPoints(rectStart, rectEnd);
 
     if( rect.inflate(tolerance).contains(point)  && !rect.deflate(tolerance).contains(point) ) {
       return true;
@@ -238,12 +238,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
         );
     double a = ( rectEnd.dx-rectStart.dx )/2;
     double b = ( rectEnd.dy-rectStart.dy )/2;
-    // @todo 垂直的长轴处理还有问题
-    //if( a>b) {
-      return Ellipse(center, a, b).containsPoint(point, tolerance: tolerance);
-    //} else {
-    //  return Ellipse(center, b, a).containsPoint(point, tolerance: tolerance);
-    //}
+    return Ellipse(center, a, b).containsPoint(point, tolerance: tolerance);
   }
 
 
