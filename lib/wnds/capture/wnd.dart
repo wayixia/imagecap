@@ -84,6 +84,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   final List<DrawingPath> _paths = [];
   final List<DrawingPath> _redoPaths = [];
   DrawingPath? _selectedPath;
+  Offset? _fixedSelectedStartPoint; // 用于固定选区起点
   Color _selectedColor = Colors.red;
   double strokeWidth = 3.0;
   bool isDrawing = false;
@@ -99,6 +100,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   @override
   void initState() {
     super.initState();
+    _fixedSelectedStartPoint = null;
     _loadImage();
   }
 
@@ -661,6 +663,26 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           // 点击到绘图对象上
           DrawingPath? path = _findDrawingPathAt(event.localPosition);
           _selectedPath = path;
+          if( path != null ) {
+            if( _selectedPath!.tool == "rectangle" ) {
+              Rect rect = Rect.fromPoints( _selectedPath!.points.first.offset, _selectedPath!.points.last.offset);
+              if( _currentHit == TrackerHit.hitDrawRectangleTopLeft) {
+                _fixedSelectedStartPoint = rect.bottomRight;
+                debugPrint("ractangle selected topleft first=${_selectedPath!.points.first.offset}, "
+                "last=${_selectedPath!.points.last.offset} ");
+              } else if( _currentHit == TrackerHit.hitDrawRectangleTopRight ) {
+                _fixedSelectedStartPoint = rect.bottomLeft;
+              } else if( _currentHit == TrackerHit.hitDrawRectangleBottomRight ) {
+                _fixedSelectedStartPoint = rect.topLeft;
+              } else if( _currentHit == TrackerHit.hitDrawRectangleBottomLeft ) {
+                _fixedSelectedStartPoint = rect.topRight;
+              } else {
+                _fixedSelectedStartPoint = null;
+              }
+            } else {
+              _fixedSelectedStartPoint = null;
+            }
+          }
           setState(() {
             
           });
@@ -720,24 +742,15 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
               // 调整线条终点
               _selectedPath!.points.last.offset = event.localPosition;
 
-            } else if( _currentHit == TrackerHit.hitDrawRectangleTopLeft ) {
-              // first point is top left, second point is bottom right
-              // if( _selectedPath!.isFirstLeftTop() ) {
-              //   _selectedPath!.points.first.offset = event.localPosition;
-              // } else {
-              //   // 调整矩形右下角
-                _selectedPath!.points.first.offset = event.localPosition;
-              //}
-            } else if( _currentHit == TrackerHit.hitDrawRectangleTopRight ) {
-              // 调整矩形右上角
-              _selectedPath!.points[0].offset = event.localPosition;
-            } else if( _currentHit == TrackerHit.hitDrawRectangleBottomRight ) {
-              // 调整矩形右下角
-              _selectedPath!.points[1].offset = event.localPosition;
-            } else if( _currentHit == TrackerHit.hitDrawRectangleBottomLeft ) {
-              // 调整矩形左下角
-              _selectedPath!.points[1].offset = event.localPosition;
-
+            } else if( ( _currentHit == TrackerHit.hitDrawRectangleTopLeft ) ||
+             ( _currentHit == TrackerHit.hitDrawRectangleTopRight ) ||
+             ( _currentHit == TrackerHit.hitDrawRectangleBottomRight ) ||
+             ( _currentHit == TrackerHit.hitDrawRectangleBottomLeft ) ) {
+              //Rect rect = Rect.fromPoints( event.localPosition, _fixedSelectedStartPoint!);
+              Offset first = _fixedSelectedStartPoint!;
+              Offset last = event.localPosition;
+              _selectedPath!.points.first.offset = first;
+              _selectedPath!.points.last.offset = last;
             } else if( _currentHit == TrackerHit.hitDrawEllipseTopCenter ) {
               // 调整椭圆上侧中点
               _selectedPath!.points[0].offset = Offset( _selectedPath!.points[0].offset.dx, event.localPosition.dy);

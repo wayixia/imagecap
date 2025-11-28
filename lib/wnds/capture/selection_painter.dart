@@ -115,13 +115,6 @@ class DrawingPath {
     
     return tackerpoints;
   }
-
-  bool isFirstLeftTop() {
-    if( points.isEmpty ) {
-      return false;
-    }
-    return points.first.offset.dx < points.last.offset.dx;
-  }
 }
 
 // 自定义绘制选区
