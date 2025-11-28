@@ -42,28 +42,4 @@ class Ellipse {
 
     return false;
   }
-  
-  // 判断点是否严格在椭圆内部（不包括边缘）
-  bool containsPointStrictly(Offset point) {
-    final double value = 
-        pow(point.dx - center.dx, 2) / pow(a, 2) + 
-        pow(point.dy - center.dy, 2) / pow(b, 2);
-    
-    return value < 1.0;
-  }
-  
-  // 获取点到椭圆边缘的关系
-  String getPointRelation(Offset point, {double tolerance = 1e-10}) {
-    final double value = 
-        pow(point.dx - center.dx, 2) / pow(a, 2) + 
-        pow(point.dy - center.dy, 2) / pow(b, 2);
-    
-    if ((value - 1.0).abs() < tolerance) {
-      return '在椭圆边缘上';
-    } else if (value < 1.0) {
-      return '在椭圆内部';
-    } else {
-      return '在椭圆外部';
-    }
-  }
 }
