@@ -152,9 +152,6 @@ class SelectionPainter extends CustomPainter {
       canvas.drawImageRect(image!, selectionRect!, selectionRect!, Paint());
     }
 
-
-    //canvas.drawImageRect(image!, selectionRect!, selectionRect!, paint);
-
     // 如果正在选择，绘制提示
     if (isSelecting) {
       _paintTips(canvas, size);
@@ -194,12 +191,13 @@ class SelectionPainter extends CustomPainter {
       String type="rectangle", 
       List<DrawingPoint>? linepoints } ) {
     // paint border and control points
-    final borderPaint = Paint()
+    
+    if( drawBorder ) {
+      final borderPaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
-    if( drawBorder ) {
-      canvas.drawRect(trackRect.inflate(2), borderPaint);
+      canvas.drawRect(trackRect, borderPaint);
     }
 
     if( drawResize ) {
