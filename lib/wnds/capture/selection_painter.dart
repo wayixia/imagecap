@@ -28,11 +28,6 @@ enum TrackerHit
   hitDrawRectangleRightCenter, 
   hitDrawRectangleBottomCenter, 
   hitDrawRectangleLeftCenter, 
-  
-  hitDrawEllipseTopCenter,
-  hitDrawEllipseLeftCenter,
-  hitDrawEllipseBottomCenter,
-  hitDrawEllipseRightCenter,
 
   hitDrawLineStart,  // line or arrow start point
   hitDrawLineEnd, // line or arrow end point
@@ -96,10 +91,10 @@ class DrawingPath {
       };
     } else if( tool == "ellipse") {
       tackerpoints = {
-        TrackerHit.hitDrawEllipseTopCenter: Offset(trackRect.center.dx, trackRect.top),
-        TrackerHit.hitDrawEllipseRightCenter: Offset(trackRect.right, trackRect.center.dy),
-        TrackerHit.hitDrawEllipseBottomCenter: Offset(trackRect.center.dx, trackRect.bottom),
-        TrackerHit.hitDrawEllipseLeftCenter: Offset(trackRect.left, trackRect.center.dy),
+        TrackerHit.hitDrawRectangleTopCenter: Offset(trackRect.center.dx, trackRect.top),
+        TrackerHit.hitDrawRectangleRightCenter: Offset(trackRect.right, trackRect.center.dy),
+        TrackerHit.hitDrawRectangleBottomCenter: Offset(trackRect.center.dx, trackRect.bottom),
+        TrackerHit.hitDrawRectangleLeftCenter: Offset(trackRect.left, trackRect.center.dy),
       };
     } else if( tool =="line" || tool =="arrow") {
       tackerpoints = points.length >= 2 ? {

@@ -666,7 +666,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           DrawingPath? path = _findDrawingPathAt(event.localPosition);
           _selectedPath = path;
           if( path != null ) {
-            if( _selectedPath!.tool == "rectangle" ) {
+            if( _selectedPath!.tool == "rectangle" || _selectedPath!.tool == "ellipse" ) {
               Rect rect = Rect.fromPoints( _selectedPath!.points.first.offset, _selectedPath!.points.last.offset);
               if( _currentHit == TrackerHit.hitDrawRectangleTopLeft) {
                 _fixedSelectedStartPoint = rect.bottomRight;
@@ -679,10 +679,10 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
               } else if( _currentHit == TrackerHit.hitDrawRectangleBottomLeft ) {
                 _fixedSelectedStartPoint = rect.topRight;
 
-              } else if( _currentHit == TrackerHit.hitDrawRectangleTopCenter ) {
+              } else if( _currentHit == TrackerHit.hitDrawRectangleTopCenter) {
                 _fixedSelectedStartPoint = rect.bottomRight;
                 _fixedSelectedEndPoint = rect.topLeft; 
-              } else if( _currentHit == TrackerHit.hitDrawRectangleRightCenter ) {
+              } else if(  _currentHit == TrackerHit.hitDrawRectangleRightCenter ) {
                 _fixedSelectedStartPoint = rect.bottomLeft;
                 _fixedSelectedEndPoint = rect.topRight; 
               } else if( _currentHit == TrackerHit.hitDrawRectangleBottomCenter ) {
@@ -748,7 +748,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           });
         } else if( _isDrawTrackerHit( _currentHit ) ) {
           //print("move draw tracker hit: $_currentHit");
-          // @todo 调整绘图对象大小, 目前除了直线和箭头外，其他图形无法正确调整
+          // 调整绘图对象大小
           setState(() {
             if( _currentHit == TrackerHit.hitDrawLineStart ) {
               // 调整线条起点
@@ -766,20 +766,20 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
               _selectedPath!.points.first.offset = first;
               _selectedPath!.points.last.offset = last;
             } else if( _currentHit == TrackerHit.hitDrawRectangleTopCenter ) {
-              // 调整矩形上侧中点
+              // 调整矩形/椭圆上侧中点
               if( _fixedSelectedEndPoint != null ) {
                 _fixedSelectedEndPoint = Offset( _fixedSelectedEndPoint!.dx, event.localPosition.dy);
                 _selectedPath!.points.first.offset = _fixedSelectedStartPoint!;
                 _selectedPath!.points.last.offset = _fixedSelectedEndPoint!;
               }
-            } else if( _currentHit == TrackerHit.hitDrawRectangleRightCenter ) {
+             } else if( _currentHit == TrackerHit.hitDrawRectangleRightCenter ) {
               // 调整矩形右侧中点
               if( _fixedSelectedEndPoint != null ) {
                 _fixedSelectedEndPoint = Offset( event.localPosition.dx, _fixedSelectedEndPoint!.dy );
                 _selectedPath!.points.first.offset = _fixedSelectedStartPoint!;
                 _selectedPath!.points.last.offset = _fixedSelectedEndPoint!;
               }
-            } else if( _currentHit == TrackerHit.hitDrawRectangleBottomCenter ) {
+            } else if( _currentHit == TrackerHit.hitDrawRectangleBottomCenter ){
               // 调整矩形下侧中点
               if( _fixedSelectedEndPoint != null ) {
                 _fixedSelectedEndPoint = Offset( _fixedSelectedEndPoint!.dx, event.localPosition.dy);
@@ -787,26 +787,13 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                 _selectedPath!.points.last.offset = _fixedSelectedEndPoint!;
               }
              } else if( _currentHit == TrackerHit.hitDrawRectangleLeftCenter ) {
-              // 调整矩形左侧中点
+              // 调整矩形/椭圆左侧中点
               if( _fixedSelectedEndPoint != null ) {
                 _fixedSelectedEndPoint = Offset( event.localPosition.dx, _fixedSelectedEndPoint!.dy );
                 _selectedPath!.points.first.offset = _fixedSelectedStartPoint!;
                 _selectedPath!.points.last.offset = _fixedSelectedEndPoint!;
               }
- 
-            } else if( _currentHit == TrackerHit.hitDrawEllipseTopCenter ) {
-              // 调整椭圆上侧中点
-              _selectedPath!.points[0].offset = Offset( _selectedPath!.points[0].offset.dx, event.localPosition.dy);
-            } else if( _currentHit == TrackerHit.hitDrawEllipseBottomCenter ) {
-              // 调整椭圆下侧中点
-              _selectedPath!.points[1].offset = Offset( _selectedPath!.points[1].offset.dx, event.localPosition.dy);
-            } else if( _currentHit == TrackerHit.hitDrawEllipseLeftCenter ) {
-              // 调整椭圆左侧中点
-              _selectedPath!.points[0].offset = Offset( event.localPosition.dx, _selectedPath!.points[0].offset.dy);
-            } else if( _currentHit == TrackerHit.hitDrawEllipseRightCenter ) {
-              // 调整椭圆右侧中点
-              _selectedPath!.points[1].offset = Offset( event.localPosition.dx, _selectedPath!.points[1].offset.dy);
-            }
+            } 
           });
         }
       } else {
