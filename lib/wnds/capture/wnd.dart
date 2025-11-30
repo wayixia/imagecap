@@ -93,7 +93,8 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   bool isDrawing = false;
   Offset? currentOffset;
   TextEditingController? _textController;
-  Offset? _textPosition;
+  Offset? _textPosition;  //文本位置
+  final Size _inputTextSize = Size(100, 30); // 文本输入框尺寸
   bool _showTextInput = false;
   String _selectedTool = "";
   Offset _drawStartPoint = Offset.zero;
@@ -107,6 +108,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     _fixedSelectedEndPoint = null;
     _fixedTrackerStartPoint = null;
     _fixedTrackerEndPoint = null;
+    _textController = TextEditingController();
     _loadImage();
   }
 
@@ -489,29 +491,32 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       if (_showTextInput && currentOffset != null)
         Positioned(
           left: _drawStartPoint.dx,
-          //left: min(_drawStartPoint.dx, currentOffset!.dx),
           top: _drawStartPoint.dy,
-          //top: min( _drawStartPoint.dy, currentOffset!.dy),
           child: Container(
-            width: (currentOffset!.dx - _drawStartPoint.dx).abs(),
-            height: (currentOffset!.dy - _drawStartPoint.dy).abs(),
-            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+            width: _inputTextSize.width,
+            height: _inputTextSize.height,
+            padding: EdgeInsets.zero,
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.red.withOpacity(0.5),
               //color: Colors.transparent,
-              borderRadius: BorderRadius.circular(3),
+              borderRadius: BorderRadius.circular(0),
+              border: Border.all(color: Colors.blue, width: 1),
+
             ),
             child: TextField(
               maxLines: null,
               keyboardType: TextInputType.multiline,
               controller: _textController,
-              style: TextStyle(color: _selectedColor, fontSize: 16),
+              style: TextStyle(color: _selectedColor,  backgroundColor: Colors.amber, fontSize: 16),
               decoration: InputDecoration(
-                hintText: '输入文字...',
+                hintText: '',
                 hintStyle: TextStyle(color: Colors.grey),
                 border: InputBorder.none,
+                fillColor: Colors.blue,
+                isDense: true
               ),
               autofocus: true,
+              scrollPadding: EdgeInsets.zero,
               onSubmitted: (value) {
                 setState(() {
                   _showTextInput = false;
