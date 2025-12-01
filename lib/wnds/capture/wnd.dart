@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:imagecap/utils/shape_detection.dart';
+import 'package:imagecap/utils/text_helper.dart';
 import 'package:imagecap/wnds/capture/selection_painter.dart';
 import 'package:imagecap/wnds/capture/toolbar.dart';
 import 'package:imagecap/utils/cursor_manager.dart';
@@ -94,11 +95,12 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   Offset? currentOffset;
   TextEditingController? _textController;
   Offset? _textPosition;  //文本位置
-  final Size _inputTextSize = Size(100, 30); // 文本输入框尺寸
+  Size _inputTextSize = Size(100, 30); // 文本输入框尺寸
   bool _showTextInput = false;
   String _selectedTool = "";
   Offset _drawStartPoint = Offset.zero;
   final double _controlPointSize = 8.0;
+  double _fontSize = 16.0;
 
 
   @override
@@ -109,6 +111,8 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     _fixedTrackerStartPoint = null;
     _fixedTrackerEndPoint = null;
     _textController = TextEditingController();
+    _textController!.addListener(_adjustEditBoundingBox);
+      
     _loadImage();
   }
 
@@ -994,5 +998,114 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
   void _onFontSizeSelected( int size ) {
 
+  }
+
+  void _adjustEditBoundingBox() {
+    if( _textController == null ) {
+      return;
+    }
+    
+    Rect? limit_rect = _selectionRect;
+    if( limit_rect == null ) {
+      return;
+    }
+
+    const double kMinWidth = 60;
+    const double kMinHeight = 24;
+
+    print("当前输入: ${_textController!.text}");
+
+    // Set style
+    //_textController.SetFont( _fontSize, _fontColor );
+
+  Rect margins = Rect.zero; // _textController.GetMargins();
+  Rect rect1 = Rect.fromLTWH(_drawStartPoint.dx, _drawStartPoint.dy, _inputTextSize.width, _inputTextSize.height);
+  Rect rect = rect1;
+  String text = _textController!.text;
+  int lineCount = TextHelper.getLineCount(text, _fontSize, _inputTextSize.width); //_textController.GetLineCount();
+  Size fSize = Size.zero;
+  Point pt = Point(0,0);
+
+  debugPrint( "Line Count {$lineCount}" );
+  //get last line text
+  double lastLineTextLength = 0;
+  String line = text;
+
+  // String ctext;
+  // int currentline = _textController.GetCurrentLine();
+  // _textController.GetLineText( currentline, ctext );
+  if( line.isNotEmpty ) {
+    // 计算字体实际的高度
+    Rect boundbox = TextHelper.measureString( line, _fontSize, pt );
+    fSize = Size( boundbox.width, boundbox.height );
+    lastLineTextLength = fSize.width;
+  }
+
+
+
+  if ( line.isEmpty ) {
+    line = '测a';
+    Rect boundbox = TextHelper.measureString( line, _fontSize, pt );
+    fSize = Size( 0, boundbox.height );
+  }
+
+
+  double actualRight = rect.left + fSize.width + margins.left + margins.right;
+  double minRight = rect.left + kMinWidth;
+  double limitRight = limit_rect.right;
+  bool needAdjust = ( actualRight > limitRight);
+
+  double rectRight = min( max(rect.left + fSize.width + margins.left + margins.right, rect.left + kMinWidth), limit_rect.right);
+
+
+  const int kGap = 0;
+  double rectLeft = max(limit_rect.left + kGap, rect.left);
+  double rectTop = max(limit_rect.top + kGap, rect.top);
+  rectRight = min(limit_rect.right - kGap, rectRight);
+  double rectBottom = min(limit_rect.bottom - kGap, rect.bottom);
+
+  double width = (rectRight - rectLeft).abs();
+  double height = (rectBottom - rectTop).abs();
+  if (width < kMinWidth) {
+    rectLeft = rectRight - kMinWidth;
+  }
+  if (height < kMinHeight) {
+    rectTop = rectBottom - kMinHeight;
+  }
+
+  //debugPrint(" line count is %d before resize \n"), _textController.GetLineCount());
+  //_textController.SetPos(rect);
+  setState(() {
+    _inputTextSize = Size( rectRight - rectLeft, rectBottom - rectTop );
+    _drawStartPoint = Offset( rectLeft, rectTop );
+  });
+
+  //debugPrint(" line count is %d after resize \n"), _textController.GetLineCount());
+  
+  // Ajust height
+  double b = rectTop + _textController.GetActualHeight() + fSize.height + margins.top + margins.bottom;
+  if( b > limit_rect.bottom ) {
+    if( ( rect.top + ( limit_rect.bottom - b ) ) < limit_rect.top ) {
+      _textController.SetLimitText( text.length-5 );
+    } else {
+      rectTop += limit_rect.bottom - b;
+      rectBottom = limit_rect.bottom;
+    }
+    //_textController.SetLimitText( text.GetLength() );
+    debugPrint( "Set limit text {$text.GetLength }"); 
+  } else {
+    rectBottom = b;
+    _textController.SetLimitText( -1 );
+    debugPrint( "Set limit text -1" ); 
+  }
+
+  setState(() {
+    _inputTextSize = Size( rectRight - rectLeft, rectBottom - rectTop );
+    _drawStartPoint = Offset( rectLeft, rectTop );
+  });
+  //_textController.SetPos(rect);
+
+  // Rect targetrect;
+  // UnionRect( &targetrect, &rect1, &rect );
   }
 }
