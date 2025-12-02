@@ -50,4 +50,27 @@ class TextHelper {
 
     return Rect.fromLTWH(pt.x.toDouble(), pt.y.toDouble(), size.width, size.height);
   }
+
+  static int GetActualHeight( String text, double fontSize, double width) {
+    if (text.isEmpty) {
+      return 0;
+    }
+
+    final textSpan = TextSpan(
+      text: text,
+      style: TextStyle(fontSize: fontSize),
+    );
+    
+    final textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+      maxLines: null,
+    );
+    
+    textPainter.layout( maxWidth: width);
+    
+    final size = textPainter.size;
+
+    return size.height.toInt();
+  }
 }

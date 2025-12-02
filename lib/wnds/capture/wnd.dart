@@ -97,6 +97,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   Offset? _textPosition;  //文本位置
   Size _inputTextSize = Size(100, 30); // 文本输入框尺寸
   bool _showTextInput = false;
+  int? _textMaxLength = null;
   String _selectedTool = "";
   Offset _drawStartPoint = Offset.zero;
   final double _controlPointSize = 8.0;
@@ -509,6 +510,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
             ),
             child: TextField(
               maxLines: null,
+              maxLength: _textMaxLength,
               keyboardType: TextInputType.multiline,
               controller: _textController,
               style: TextStyle(color: _selectedColor,  backgroundColor: Colors.amber, fontSize: 16),
@@ -1083,10 +1085,11 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   //debugPrint(" line count is %d after resize \n"), _textController.GetLineCount());
   
   // Ajust height
-  double b = rectTop + _textController.GetActualHeight() + fSize.height + margins.top + margins.bottom;
+  double b = rectTop + TextHelper.GetActualHeight(text, _fontSize, _inputTextSize.width) + fSize.height + margins.top + margins.bottom;
   if( b > limit_rect.bottom ) {
     if( ( rect.top + ( limit_rect.bottom - b ) ) < limit_rect.top ) {
-      _textController.SetLimitText( text.length-5 );
+      //_textController.SetLimitText( text.length-5 );
+      _textMaxLength = text.length - 5;
     } else {
       rectTop += limit_rect.bottom - b;
       rectBottom = limit_rect.bottom;
@@ -1095,7 +1098,8 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     debugPrint( "Set limit text {$text.GetLength }"); 
   } else {
     rectBottom = b;
-    _textController.SetLimitText( -1 );
+    //_textController.SetLimitText( -1 );
+    _textMaxLength = null;
     debugPrint( "Set limit text -1" ); 
   }
 
