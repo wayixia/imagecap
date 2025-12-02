@@ -51,7 +51,7 @@ class TextHelper {
     return Rect.fromLTWH(pt.x.toDouble(), pt.y.toDouble(), size.width, size.height);
   }
 
-  static int GetActualHeight( String text, double fontSize, double width) {
+  static int getActualHeight( String text, double fontSize, double width) {
     if (text.isEmpty) {
       return 0;
     }

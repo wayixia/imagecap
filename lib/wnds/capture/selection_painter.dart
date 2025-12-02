@@ -296,21 +296,21 @@ class SelectionPainter extends CustomPainter {
     }
 
     // 绘制文本
-    if (textPosition != null && textContent != null && textContent!.isNotEmpty) {
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: textContent,
-          style: TextStyle(
-            color: textColor,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
-      textPainter.paint(canvas, textPosition!);
-    }
+    // if (textPosition != null && textContent != null && textContent!.isNotEmpty) {
+    //   final textPainter = TextPainter(
+    //     text: TextSpan(
+    //       text: textContent,
+    //       style: TextStyle(
+    //         color: textColor,
+    //         fontSize: 16,
+    //         fontWeight: FontWeight.bold,
+    //       ),
+    //     ),
+    //     textDirection: TextDirection.ltr,
+    //   );
+    //   textPainter.layout();
+    //   textPainter.paint(canvas, textPosition!);
+    // }
 
     if(selectedPath != null) {
       // 绘制选中路径的边框
