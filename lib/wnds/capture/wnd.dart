@@ -95,14 +95,27 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   Offset? currentOffset;
   TextEditingController? _textController;
   Offset? _textPosition;  //文本位置
-  Size _inputTextSize = Size(100, 30); // 文本输入框尺寸
+  Size _inputTextSize = Size(100, 0); // 文本输入框尺寸
   bool _showTextInput = false;
   int? _textMaxLength = null;
   String _selectedTool = "";
   Offset _drawStartPoint = Offset.zero;
   final double _controlPointSize = 8.0;
   double _fontSize = 16.0;
+  final GlobalKey _textFieldKey = GlobalKey();
+  
+  void _resetTextInput() {
+    Rect boundingbox = TextHelper.measureString('测a', _getTextStyle(), Point(0,0));
+    _inputTextSize = Size(100, boundingbox.height);
+    _textController?.text = "";
+  }
 
+  TextStyle _getTextStyle() {
+    return TextStyle(
+      color: _selectedColor,
+      fontSize: _fontSize,
+    );
+  }
 
   @override
   void initState() {
@@ -113,7 +126,8 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     _fixedTrackerEndPoint = null;
     _textController = TextEditingController();
     _textController!.addListener(_adjustEditBoundingBox);
-      
+
+    _resetTextInput();
     _loadImage();
   }
 
@@ -214,6 +228,21 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     return Ellipse(center, a, b).containsPoint(point, tolerance: tolerance);
   }
 
+  double _getTextFieldWidth() {
+    final context = _textFieldKey.currentContext;
+    if (context != null) {
+      final renderBox = context.findRenderObject() as RenderBox?;
+      if (renderBox != null) {
+        //setState(() {
+          // 减去内边距（左右各8像素）
+        //  _textFieldWidth = renderBox.size.width - 16;
+        //});
+        return renderBox.size.width;
+      }
+    }
+
+    return _inputTextSize.width;
+  }
 
   DrawingPath? _findDrawingPathAt(Offset point) {
     for (var path in _paths.reversed) {
@@ -498,6 +527,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           left: _drawStartPoint.dx,
           top: _drawStartPoint.dy,
           child: Container(
+            key: _textFieldKey,
             width: _inputTextSize.width,
             height: _inputTextSize.height,
             padding: EdgeInsets.zero,
@@ -505,7 +535,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
               color: Colors.red.withOpacity(0.5),
               //color: Colors.transparent,
               borderRadius: BorderRadius.circular(0),
-              border: Border.all(color: Colors.blue, width: 1),
+              border: Border.all(color: Colors.blue, width: 0),
 
             ),
             child: ScrollConfiguration(
@@ -517,21 +547,20 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                 maxLength: _textMaxLength,
                 keyboardType: TextInputType.multiline,
                 controller: _textController,
-                style: TextStyle(color: _selectedColor,  backgroundColor: Colors.amber, fontSize: 16),
-                decoration: InputDecoration(
+                style: _getTextStyle(),
+                strutStyle: StrutStyle.disabled,
+                decoration: InputDecoration.collapsed(
                   hintText: '',
-                  hintStyle: TextStyle(color: Colors.grey),
-                  border: InputBorder.none,
-                  fillColor: Colors.blue,
-                  isDense: true
                 ),
+                // decoration: InputDecoration(
+                //   hintText: '',
+                //   hintStyle: TextStyle(color: Colors.grey),
+                //   border: InputBorder.none,
+                //   fillColor: Colors.blue,
+                //   isDense: true
+                // ),
                 autofocus: true,
-                scrollPadding: EdgeInsets.zero,
-                onSubmitted: (value) {
-                  setState(() {
-                    _showTextInput = false;
-                  });
-                },
+                //scrollPadding: EdgeInsets.zero,
               ),
             ),
           ),
@@ -856,6 +885,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     if (_selectedTool == 'text') 
     {
       setState(() {
+        _resetTextInput();
         isDrawing = true;
         _showTextInput = true;
         currentOffset = details.localPosition;
@@ -1012,59 +1042,42 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       return;
     }
     
-    Rect? limit_rect = _selectionRect;
-    if( limit_rect == null ) {
+    Rect? limitRect = _selectionRect;
+    if( limitRect == null ) {
       return;
     }
 
     const double kMinWidth = 60;
     const double kMinHeight = 24;
 
-    print("当前输入: ${_textController!.text}");
+    debugPrint("当前输入: ${_textController!.text}");
 
-    Rect margins = Rect.zero; // _textController.GetMargins();
-    Rect rect1 = Rect.fromLTWH(_drawStartPoint.dx, _drawStartPoint.dy, _inputTextSize.width, _inputTextSize.height);
+    Rect margins = Rect.zero; 
+    Rect rect1 = Rect.fromLTWH(_drawStartPoint.dx, _drawStartPoint.dy, _getTextFieldWidth(), _inputTextSize.height);
     Rect rect = rect1;
     String text = _textController!.text;
-    int lineCount = TextHelper.getLineCount(text, _fontSize, rect.width); //_textController.GetLineCount();
+
+    int lineCount = TextHelper.getLineCount(text, _getTextStyle(), rect.width); 
     Size fSize = Size.zero;
     Point pt = Point(0,0);
+    debugPrint( "Line Count {$lineCount} maxwidth=${rect.width}" );
 
-    debugPrint( "Line Count {$lineCount}" );
-    
-    //get last line text
-    double lastLineTextLength = 0;
-    String line = text;
-
-    // String ctext;
-    // int currentline = _textController.GetCurrentLine();
-    // _textController.GetLineText( currentline, ctext );
-    if( line.isNotEmpty ) {
-      // 计算字体实际的高度
-      Rect boundbox = TextHelper.measureString( line, _fontSize, pt );
+    // 计算字体实际的高度
+    if( text.isNotEmpty ) {
+      Rect boundbox = TextHelper.measureString( text, _getTextStyle(), pt );
       fSize = Size( boundbox.width, boundbox.height );
-      lastLineTextLength = fSize.width;
-    }
-
-    if ( line.isEmpty ) {
-      line = '测a';
-      Rect boundbox = TextHelper.measureString( line, _fontSize, pt );
+    } else {
+      Rect boundbox = TextHelper.measureString( '测a', _getTextStyle(), pt );
       fSize = Size( 0, boundbox.height );
     }
 
-    double actualRight = rect.left + fSize.width + margins.left + margins.right;
-    double minRight = rect.left + kMinWidth;
-    double limitRight = limit_rect.right;
-    bool needAdjust = ( actualRight > limitRight);
-
-    double rectRight = min( max(rect.left + fSize.width + margins.left + margins.right, rect.left + kMinWidth), limit_rect.right);
-
+    double rectRight = min( max(rect.left + fSize.width + margins.left + margins.right, rect.left + kMinWidth), limitRect.right);
 
     const int kGap = 0;
-    double rectLeft = max(limit_rect.left + kGap, rect.left);
-    double rectTop = max(limit_rect.top + kGap, rect.top);
-    rectRight = min(limit_rect.right - kGap, rectRight);
-    double rectBottom = min(limit_rect.bottom - kGap, rect.bottom);
+    double rectLeft = max(limitRect.left + kGap, rect.left);
+    double rectTop = max(limitRect.top + kGap, rect.top);
+    rectRight = min(limitRect.right - kGap, rectRight);
+    double rectBottom = min(limitRect.bottom - kGap, rect.bottom);
 
     double width = (rectRight - rectLeft).abs();
     double height = (rectBottom - rectTop).abs();
@@ -1076,6 +1089,8 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       rectTop = rectBottom - kMinHeight;
     }
 
+
+
     //debugPrint(" line count is %d before resize \n"), _textController.GetLineCount());
     //_textController.SetPos(rect);
     //setState(() {
@@ -1083,29 +1098,33 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     _drawStartPoint = Offset( rectLeft, rectTop );
     //});
 
+    lineCount = TextHelper.getLineCount(text, _getTextStyle(), _inputTextSize.width); 
+    debugPrint(" line count is {$lineCount} maxwidth={$_inputTextSize.width} ");
+
     //debugPrint(" line count is %d after resize \n"), _textController.GetLineCount());
     // Ajust height
-    double b = rectTop + TextHelper.getActualHeight(text, _fontSize, _inputTextSize.width) + fSize.height + margins.top + margins.bottom;
-    if( b > limit_rect.bottom ) {
-      if( ( rectTop + ( limit_rect.bottom - b ) ) < limit_rect.top ) {
+    double b = rectTop + TextHelper.getActualHeight(text, _getTextStyle(), _inputTextSize.width+16) + fSize.height + margins.top + margins.bottom;
+    if( b > limitRect.bottom ) {
+      if( ( rectTop + ( limitRect.bottom - b ) ) < limitRect.top ) {
         //_textController.SetLimitText( text.length-5 );
         _textMaxLength = text.length - 5;
       } else {
-        rectTop += limit_rect.bottom - b;
-        rectBottom = limit_rect.bottom;
+        rectTop += limitRect.bottom - b;
+        rectBottom = limitRect.bottom;
       }
       //_textController.SetLimitText( text.GetLength() );
-      debugPrint( "Set limit text {$text.GetLength }"); 
+      //debugPrint( "Set limit text {$text.GetLength }"); 
     } else {
       rectBottom = b;
       //_textController.SetLimitText( -1 );
       _textMaxLength = null;
-      debugPrint( "Set limit text -1" ); 
+      //debugPrint( "Set limit text -1" ); 
     }
 
     setState(() {
       _inputTextSize = Size( rectRight - rectLeft, rectBottom - rectTop );
       _drawStartPoint = Offset( rectLeft, rectTop );
+      debugPrint("Adjusted input box to $_inputTextSize at $_drawStartPoint");
     });
     //_textController.SetPos(rect);
 

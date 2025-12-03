@@ -5,14 +5,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class TextHelper {
-  static int getLineCount( String text, double fontSize, double width) {
+  static int getLineCount( String text, TextStyle ts, double width) {
     if (text.isEmpty) {
       return 0;
     }
 
     final textSpan = TextSpan(
       text: text,
-      style: TextStyle(fontSize: fontSize),
+      style: ts,
     );
     
     final textPainter = TextPainter(
@@ -28,14 +28,14 @@ class TextHelper {
     return newLineCount;
   }
 
-  static Rect measureString( String text, double fontSize, Point pt) {
+  static Rect measureString( String text, TextStyle ts, Point pt) {
     if (text.isEmpty) {
       return Rect.fromLTWH(0, 0, 0, 0);
     }
 
     final textSpan = TextSpan(
       text: text,
-      style: TextStyle(fontSize: fontSize),
+      style: ts,
     );
     
     final textPainter = TextPainter(
@@ -51,14 +51,14 @@ class TextHelper {
     return Rect.fromLTWH(pt.x.toDouble(), pt.y.toDouble(), size.width, size.height);
   }
 
-  static int getActualHeight( String text, double fontSize, double width) {
+  static int getActualHeight( String text, TextStyle ts, double width) {
     if (text.isEmpty) {
       return 0;
     }
 
     final textSpan = TextSpan(
       text: text,
-      style: TextStyle(fontSize: fontSize),
+      style: ts,
     );
     
     final textPainter = TextPainter(
