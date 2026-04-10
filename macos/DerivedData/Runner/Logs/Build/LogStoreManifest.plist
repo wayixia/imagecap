@@ -3,51 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>logFormatVersion</key>
-	<integer>11</integer>
+	<integer>12</integer>
 	<key>logs</key>
-	<dict>
-		<key>17D5AAE0-E380-4F0B-AC79-25C022EB2B86</key>
-		<dict>
-			<key>className</key>
-			<string>IDEActivityLogSection</string>
-			<key>documentTypeString</key>
-			<string>&lt;nil&gt;</string>
-			<key>domainType</key>
-			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
-			<key>fileName</key>
-			<string>17D5AAE0-E380-4F0B-AC79-25C022EB2B86.xcactivitylog</string>
-			<key>hasPrimaryLog</key>
-			<true/>
-			<key>primaryObservable</key>
-			<dict>
-				<key>highLevelStatus</key>
-				<string>E</string>
-				<key>totalNumberOfAnalyzerIssues</key>
-				<integer>0</integer>
-				<key>totalNumberOfErrors</key>
-				<integer>3</integer>
-				<key>totalNumberOfTestFailures</key>
-				<integer>0</integer>
-				<key>totalNumberOfWarnings</key>
-				<integer>3</integer>
-			</dict>
-			<key>schemeIdentifier-containerName</key>
-			<string>Runner project</string>
-			<key>schemeIdentifier-schemeName</key>
-			<string>Runner</string>
-			<key>schemeIdentifier-sharedScheme</key>
-			<integer>1</integer>
-			<key>signature</key>
-			<string>Build Runner</string>
-			<key>timeStartedRecording</key>
-			<real>784282182.47650695</real>
-			<key>timeStoppedRecording</key>
-			<real>784282186.36212504</real>
-			<key>title</key>
-			<string>Build Runner</string>
-			<key>uniqueIdentifier</key>
-			<string>17D5AAE0-E380-4F0B-AC79-25C022EB2B86</string>
-		</dict>
-	</dict>
+	<dict/>
 </dict>
 </plist>

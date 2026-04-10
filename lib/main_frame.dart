@@ -149,7 +149,35 @@ class _MainFrameState extends State<MainFrame> {
                     ],)
                      
                   ),
-                  Expanded(child: Container(color: Colors.white, width: double.infinity,)),
+                  Expanded(child: Container(
+                    color: Colors.blue, 
+                    width: double.infinity, 
+                    child: TextField(
+                      maxLines: null,
+                      maxLength:  1000,
+                      keyboardType: TextInputType.multiline,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16.0,
+                        height: 1.0),
+                      strutStyle: StrutStyle.disabled,
+                      decoration: InputDecoration.collapsed(
+                        hintText: '', 
+                        fillColor: Colors.yellow,
+                      ),
+                // decoration: InputDecoration(
+                //   hintText: '',
+                //   hintStyle: TextStyle(color: Colors.grey),
+                //   border: InputBorder.none,
+                //   fillColor: Colors.blue,
+                //   isDense: true
+                // ),
+                        autofocus: true,
+                        scrollPhysics: NeverScrollableScrollPhysics(), // 禁止滚动
+                        //scrollPadding: EdgeInsets.zero,
+                      ),
+                    )
+                  ),
                  
                   // const SizedBox(height: 10),
                   // SegmentedButton<NavigationRailLabelType>(

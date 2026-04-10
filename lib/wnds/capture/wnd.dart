@@ -95,13 +95,13 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   Offset? currentOffset;
   TextEditingController? _textController;
   Offset? _textPosition;  //文本位置
-  Size _inputTextSize = Size(100, 0); // 文本输入框尺寸
+  Size _inputTextSize = Size(100, 30); // 文本输入框尺寸
   bool _showTextInput = false;
-  int? _textMaxLength = null;
+  int? _textMaxLength;
   String _selectedTool = "";
   Offset _drawStartPoint = Offset.zero;
   final double _controlPointSize = 8.0;
-  double _fontSize = 16.0;
+  final double _fontSize = 16.0;
   final GlobalKey _textFieldKey = GlobalKey();
   
   void _resetTextInput() {
@@ -114,6 +114,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     return TextStyle(
       color: _selectedColor,
       fontSize: _fontSize,
+      height: 1.0
     );
   }
 
@@ -540,7 +541,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
             ),
             child: ScrollConfiguration(
               behavior: ScrollConfiguration.of(context).copyWith(
-              scrollbars: false, // 隐藏滚动条
+                scrollbars: false, // 隐藏滚动条
               ),
               child: TextField(
                 maxLines: null,
@@ -560,6 +561,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                 //   isDense: true
                 // ),
                 autofocus: true,
+                scrollPhysics: NeverScrollableScrollPhysics(), // 禁止滚动
                 //scrollPadding: EdgeInsets.zero,
               ),
             ),
@@ -1053,14 +1055,13 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     debugPrint("当前输入: ${_textController!.text}");
 
     Rect margins = Rect.zero; 
-    Rect rect1 = Rect.fromLTWH(_drawStartPoint.dx, _drawStartPoint.dy, _getTextFieldWidth(), _inputTextSize.height);
+    Rect rect1 = Rect.fromLTWH(_drawStartPoint.dx, _drawStartPoint.dy, _inputTextSize.width, _inputTextSize.height);
     Rect rect = rect1;
     String text = _textController!.text;
 
-    int lineCount = TextHelper.getLineCount(text, _getTextStyle(), rect.width); 
+
     Size fSize = Size.zero;
-    Point pt = Point(0,0);
-    debugPrint( "Line Count {$lineCount} maxwidth=${rect.width}" );
+    Point<double> pt = Point<double>(0,0);
 
     // 计算字体实际的高度
     if( text.isNotEmpty ) {
@@ -1071,9 +1072,10 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       fSize = Size( 0, boundbox.height );
     }
 
+
     double rectRight = min( max(rect.left + fSize.width + margins.left + margins.right, rect.left + kMinWidth), limitRect.right);
 
-    const int kGap = 0;
+    const double kGap = 0;
     double rectLeft = max(limitRect.left + kGap, rect.left);
     double rectTop = max(limitRect.top + kGap, rect.top);
     rectRight = min(limitRect.right - kGap, rectRight);
@@ -1094,22 +1096,31 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     //debugPrint(" line count is %d before resize \n"), _textController.GetLineCount());
     //_textController.SetPos(rect);
     //setState(() {
-    _inputTextSize = Size( rectRight - rectLeft, rectBottom - rectTop );
-    _drawStartPoint = Offset( rectLeft, rectTop );
+    //_inputTextSize = Size( rectRight - rectLeft, rectBottom - rectTop );
+    //_drawStartPoint = Offset( rectLeft, rectTop );
     //});
 
-    lineCount = TextHelper.getLineCount(text, _getTextStyle(), _inputTextSize.width); 
-    debugPrint(" line count is {$lineCount} maxwidth={$_inputTextSize.width} ");
+    //lineCount = TextHelper.getLineCount(text, _getTextStyle(), _inputTextSize.width); 
+    //debugPrint(" line count is {$lineCount} maxwidth={$_inputTextSize.width} ");
 
+    double maxWidth = rectRight - rectLeft - margins.left - margins.right;
     //debugPrint(" line count is %d after resize \n"), _textController.GetLineCount());
     // Ajust height
-    double b = rectTop + TextHelper.getActualHeight(text, _getTextStyle(), _inputTextSize.width+16) + fSize.height + margins.top + margins.bottom;
+    double acturalHeight = TextHelper.getActualHeight(text, _getTextStyle(), maxWidth);
+    if( acturalHeight < kMinHeight ) {
+      //acturalHeight = kMinHeight;
+      acturalHeight = kMinHeight;
+    }
+    
+    debugPrint("acture height is {$acturalHeight} maxwidth={$maxWidth} fSize={$fSize}");
+
+    double b = rectTop + acturalHeight + margins.top + margins.bottom;
     if( b > limitRect.bottom ) {
       if( ( rectTop + ( limitRect.bottom - b ) ) < limitRect.top ) {
         //_textController.SetLimitText( text.length-5 );
         _textMaxLength = text.length - 5;
       } else {
-        rectTop += limitRect.bottom - b;
+        rectTop = limitRect.bottom - b;
         rectBottom = limitRect.bottom;
       }
       //_textController.SetLimitText( text.GetLength() );

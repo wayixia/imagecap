@@ -28,7 +28,7 @@ class TextHelper {
     return newLineCount;
   }
 
-  static Rect measureString( String text, TextStyle ts, Point pt) {
+  static Rect measureString( String text, TextStyle ts, Point<double> pt) {
     if (text.isEmpty) {
       return Rect.fromLTWH(0, 0, 0, 0);
     }
@@ -48,10 +48,10 @@ class TextHelper {
     
     final size = textPainter.size;
 
-    return Rect.fromLTWH(pt.x.toDouble(), pt.y.toDouble(), size.width, size.height);
+    return Rect.fromLTWH(pt.x, pt.y, size.width, size.height);
   }
 
-  static int getActualHeight( String text, TextStyle ts, double width) {
+  static double getActualHeight( String text, TextStyle ts, double width) {
     if (text.isEmpty) {
       return 0;
     }
@@ -71,6 +71,6 @@ class TextHelper {
     
     final size = textPainter.size;
 
-    return size.height.toInt();
+    return size.height;
   }
 }
