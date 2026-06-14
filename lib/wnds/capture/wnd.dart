@@ -93,16 +93,21 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   double strokeWidth = 3.0;
   bool isDrawing = false;
   Offset? currentOffset;
-  TextEditingController? _textController;
+  late TextEditingController _textController;
   Offset? _textPosition;  //文本位置
   Size _inputTextSize = Size(100, 30); // 文本输入框尺寸
   bool _showTextInput = false;
-  int? _textMaxLength;
+  double _textMaxLength =100;
   String _selectedTool = "";
   Offset _drawStartPoint = Offset.zero;
   final double _controlPointSize = 8.0;
   final double _fontSize = 16.0;
   final GlobalKey _textFieldKey = GlobalKey();
+
+    // 限制最大高度 自己修改
+  final double _maxInputHeight = 80;
+  // 单行高度
+  final double _lineHeight = 22;
   
   void _resetTextInput() {
     Rect boundingbox = TextHelper.measureString('测a', _getTextStyle(), Point(0,0));
@@ -126,7 +131,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     _fixedTrackerStartPoint = null;
     _fixedTrackerEndPoint = null;
     _textController = TextEditingController();
-    _textController!.addListener(_adjustEditBoundingBox);
+    //_textController.addListener(_adjustEditBoundingBox);
 
     _resetTextInput();
     _loadImage();
@@ -152,6 +157,12 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     );
   }
 
+  // 校验是否超出最大高度
+  bool _isOverHeight(String text) {
+    // 计算行数
+    int lineCount = '\n'.allMatches(text).length + 1;
+    return lineCount * _lineHeight > (_selectionRect!.bottom-_drawStartPoint.dy);
+  }
 
   bool _isDrawMode()
   {
@@ -498,7 +509,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                 selectedPath: _selectedPath,
                 textColor: _selectedColor,
                 textPosition: _textPosition,
-                textContent: _textController?.text,
+                textContent: _textController.text,
                 controlPointSize: _controlPointSize,
               ),
             ),
@@ -524,6 +535,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
  
       // 文本输入框
       if (_showTextInput && currentOffset != null)
+        /*
         Positioned(
           left: _drawStartPoint.dx,
           top: _drawStartPoint.dy,
@@ -567,6 +579,51 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
             ),
           ),
         ),
+        */
+        // 绝对定位
+        Positioned(
+            left: _drawStartPoint.dx,
+            top: _drawStartPoint.dy,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: 100,
+                maxWidth: _selectionRect!.right - _drawStartPoint.dx,
+                maxHeight: _selectionRect!.bottom - _drawStartPoint.dy,
+              ),
+              child: IntrinsicWidth(
+                child: TextField(
+                  controller: _textController,
+                  // 核心：拦截输入，超限禁止
+                  onChanged: (value) {
+                    if (_isOverHeight(value)) {
+                      // 超出高度，截断内容，禁止新增
+                      String lastValidText = _textController.text;
+                      _textController.text = lastValidText;
+                      // 光标定位末尾
+                      _textController.selection = TextSelection.fromPosition(
+                        TextPosition(offset: _textController.text.length),
+                      );
+                      return;
+                    }
+                    setState(() {});
+                  },
+                  minLines: 1,
+                  maxLines: null,
+                  // 禁止手动回车换行
+                  textInputAction: TextInputAction.done,
+                  style: TextStyle(fontSize: 16, height: _lineHeight / 16),
+                  decoration: const InputDecoration(
+                    hintText: "超高度禁止输入...",
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    isDense: true,
+                    fillColor: Colors.white,
+                    filled: true,
+                  ),
+                ),
+              ),
+            ),
+      ),
     ];
   }
 
@@ -1052,7 +1109,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     const double kMinWidth = 60;
     const double kMinHeight = 24;
 
-    debugPrint("当前输入: ${_textController!.text}");
+    debugPrint("当前输入: ${_textController.text}");
 
     Rect margins = Rect.zero; 
     Rect rect1 = Rect.fromLTWH(_drawStartPoint.dx, _drawStartPoint.dy, _inputTextSize.width, _inputTextSize.height);
@@ -1128,7 +1185,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     } else {
       rectBottom = b;
       //_textController.SetLimitText( -1 );
-      _textMaxLength = null;
+      _textMaxLength = 100;
       //debugPrint( "Set limit text -1" ); 
     }
 
