@@ -119,7 +119,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     return TextStyle(
       color: _selectedColor,
       fontSize: _fontSize,
-      height: 1.0
+      height: _lineHeight/_fontSize, // 设置行高
     );
   }
 
@@ -160,8 +160,10 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   // 校验是否超出最大高度
   bool _isOverHeight(String text) {
     // 计算行数
-    int lineCount = '\n'.allMatches(text).length + 1;
-    return lineCount * _lineHeight > (_selectionRect!.bottom-_drawStartPoint.dy);
+    double actualHeight = TextHelper.getActualHeight(text, _getTextStyle(), _getTextFieldWidth());
+    //int lineCount = '\n'.allMatches(text).length + 1;
+    //return lineCount * _lineHeight > (_selectionRect!.bottom-_drawStartPoint.dy);
+    return actualHeight > (_selectionRect!.bottom-_drawStartPoint.dy);
   }
 
   bool _isDrawMode()
@@ -591,7 +593,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                 maxHeight: _selectionRect!.bottom - _drawStartPoint.dy,
               ),
               child: IntrinsicWidth(
+                //key: _textFieldKey,
                 child: TextField(
+                  //key: _textFieldKey,
                   controller: _textController,
                   // 核心：拦截输入，超限禁止
                   onChanged: (value) {
@@ -611,7 +615,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
                   maxLines: null,
                   // 禁止手动回车换行
                   textInputAction: TextInputAction.done,
-                  style: TextStyle(fontSize: 16, height: _lineHeight / 16),
+                  style: _getTextStyle(),
                   decoration: const InputDecoration(
                     hintText: "超高度禁止输入...",
                     border: OutlineInputBorder(),
