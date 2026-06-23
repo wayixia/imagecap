@@ -14,6 +14,7 @@ import 'package:imagecap/utils/image_utils.dart';
 import 'package:imagecap/wnds/capture/toolbar_options.dart';
 import 'package:window_manager/window_manager.dart';
 //import 'package:window_manager/window_manager.dart';
+import 'package:imagecap/wnds/capture/mtextinput.dart';
 
 
 
@@ -157,14 +158,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     );
   }
 
-  // 校验是否超出最大高度
-  bool _isOverHeight(String text) {
-    // 计算行数
-    double actualHeight = TextHelper.getActualHeight(text, _getTextStyle(), _getTextFieldWidth());
-    //int lineCount = '\n'.allMatches(text).length + 1;
-    //return lineCount * _lineHeight > (_selectionRect!.bottom-_drawStartPoint.dy);
-    return actualHeight > (_selectionRect!.bottom-_drawStartPoint.dy);
-  }
+
 
   bool _isDrawMode()
   {
@@ -242,7 +236,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     return Ellipse(center, a, b).containsPoint(point, tolerance: tolerance);
   }
 
-  double _getTextFieldWidth() {
+  Size _getTextFieldSize() {
     final context = _textFieldKey.currentContext;
     if (context != null) {
       final renderBox = context.findRenderObject() as RenderBox?;
@@ -251,11 +245,11 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
           // 减去内边距（左右各8像素）
         //  _textFieldWidth = renderBox.size.width - 16;
         //});
-        return renderBox.size.width;
+        return renderBox.size;
       }
     }
 
-    return _inputTextSize.width;
+    return _inputTextSize;
   }
 
   DrawingPath? _findDrawingPathAt(Offset point) {
@@ -588,42 +582,15 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
             top: _drawStartPoint.dy,
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minWidth: 100,
+                minWidth: 0,
                 maxWidth: _selectionRect!.right - _drawStartPoint.dx,
                 maxHeight: _selectionRect!.bottom - _drawStartPoint.dy,
               ),
               child: IntrinsicWidth(
-                //key: _textFieldKey,
-                child: TextField(
-                  //key: _textFieldKey,
-                  controller: _textController,
-                  // 核心：拦截输入，超限禁止
-                  onChanged: (value) {
-                    if (_isOverHeight(value)) {
-                      // 超出高度，截断内容，禁止新增
-                      String lastValidText = _textController.text;
-                      _textController.text = lastValidText;
-                      // 光标定位末尾
-                      _textController.selection = TextSelection.fromPosition(
-                        TextPosition(offset: _textController.text.length),
-                      );
-                      return;
-                    }
-                    setState(() {});
-                  },
-                  minLines: 1,
-                  maxLines: null,
-                  // 禁止手动回车换行
-                  textInputAction: TextInputAction.done,
-                  style: _getTextStyle(),
-                  decoration: const InputDecoration(
-                    hintText: "超高度禁止输入...",
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    isDense: true,
-                    fillColor: Colors.white,
-                    filled: true,
-                  ),
+                child: MTextInput(
+                  mkey: _textFieldKey,
+                  textController: _textController, 
+                  textStyle: _getTextStyle(),
                 ),
               ),
             ),
@@ -947,7 +914,38 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
     if (_selectedTool == 'text') 
     {
+      if( _showTextInput )
+      {
+        // create text node
+      }
       setState(() {
+        if( _showTextInput )
+        {
+          _paths.add(DrawingPath(
+            color: _selectedColor,
+            strokeWidth: strokeWidth,
+            tool: _selectedTool,
+            text: _textController.text,
+          ));
+        
+          _paths.last.points.add(DrawingPoint(
+            offset: _drawStartPoint,
+            color: _selectedColor,
+            strokeWidth: strokeWidth,
+            tool: _selectedTool,
+          ));
+
+          Offset endpoint = _drawStartPoint;
+          Size size = _getTextFieldSize();
+          endpoint = Offset( _drawStartPoint.dx + size.width, _drawStartPoint.dy + size.height );
+          _paths.last.points.add(DrawingPoint(
+            offset: endpoint,
+            color: _selectedColor,
+            strokeWidth: strokeWidth,
+            tool: _selectedTool,
+          ));
+
+        }
         _resetTextInput();
         isDrawing = true;
         _showTextInput = true;

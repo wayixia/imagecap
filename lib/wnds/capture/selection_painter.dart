@@ -61,10 +61,12 @@ class DrawingPoint {
 class DrawingPath {
   List<DrawingPoint> points = [];
   Color color;
-  double strokeWidth;
+  double strokeWidth;  // or font size
   String tool;
+  String text;
 
   DrawingPath({
+    this.text = '',
     required this.color,
     required this.strokeWidth,
     required this.tool,
@@ -291,25 +293,27 @@ class SelectionPainter extends CustomPainter {
         } else if (path.tool == 'arrow' && path.points.length >= 2) {
           // 箭头
           _drawArrow(canvas, path.points.first.offset, path.points.last.offset, paint);
+        } else if (path.tool == 'text' && path.points.length >= 2 && path.text.isNotEmpty) {
+          final textPainter = TextPainter( 
+            text: TextSpan( 
+              text: path.text, 
+              style: TextStyle( 
+                color: path.color, 
+                fontSize: 16, 
+                //fontWeight: FontWeight.bold,
+              ),
+            ),
+            textDirection: TextDirection.ltr,
+          );
+          Offset size = path.points.last.offset - path.points.first.offset; // Ensure the last point is used for text position
+          textPainter.layout( maxWidth: size.dx);
+          textPainter.paint(canvas, path.points.first.offset);
         }
       }
     }
 
     // 绘制文本
     // if (textPosition != null && textContent != null && textContent!.isNotEmpty) {
-    //   final textPainter = TextPainter(
-    //     text: TextSpan(
-    //       text: textContent,
-    //       style: TextStyle(
-    //         color: textColor,
-    //         fontSize: 16,
-    //         fontWeight: FontWeight.bold,
-    //       ),
-    //     ),
-    //     textDirection: TextDirection.ltr,
-    //   );
-    //   textPainter.layout();
-    //   textPainter.paint(canvas, textPosition!);
     // }
 
     if(selectedPath != null) {

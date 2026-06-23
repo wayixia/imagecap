@@ -42,7 +42,6 @@ class CaptureToolbar extends StatefulWidget {
 class _CaptureToolbarState extends State<CaptureToolbar> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
   
