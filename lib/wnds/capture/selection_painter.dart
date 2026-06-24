@@ -64,9 +64,11 @@ class DrawingPath {
   double strokeWidth;  // or font size
   String tool;
   String text;
+  TextStyle? textStyle;
 
   DrawingPath({
     this.text = '',
+    this.textStyle,
     required this.color,
     required this.strokeWidth,
     required this.tool,
@@ -296,13 +298,9 @@ class SelectionPainter extends CustomPainter {
         } else if (path.tool == 'text' && path.points.length >= 2 && path.text.isNotEmpty) {
           final textPainter = TextPainter( 
             text: TextSpan( 
-              text: path.text, 
-              style: TextStyle( 
-                color: path.color, 
-                fontSize: 16, 
-                //fontWeight: FontWeight.bold,
+                text: path.text, 
+                style: path.textStyle!,
               ),
-            ),
             textDirection: TextDirection.ltr,
           );
           Offset size = path.points.last.offset - path.points.first.offset; // Ensure the last point is used for text position

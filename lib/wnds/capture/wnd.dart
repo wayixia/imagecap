@@ -104,6 +104,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   final double _controlPointSize = 8.0;
   final double _fontSize = 16.0;
   final GlobalKey _textFieldKey = GlobalKey();
+  final FocusNode _textFocus = FocusNode();
 
     // 限制最大高度 自己修改
   final double _maxInputHeight = 80;
@@ -531,51 +532,6 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
  
       // 文本输入框
       if (_showTextInput && currentOffset != null)
-        /*
-        Positioned(
-          left: _drawStartPoint.dx,
-          top: _drawStartPoint.dy,
-          child: Container(
-            key: _textFieldKey,
-            width: _inputTextSize.width,
-            height: _inputTextSize.height,
-            padding: EdgeInsets.zero,
-            decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.5),
-              //color: Colors.transparent,
-              borderRadius: BorderRadius.circular(0),
-              border: Border.all(color: Colors.blue, width: 0),
-
-            ),
-            child: ScrollConfiguration(
-              behavior: ScrollConfiguration.of(context).copyWith(
-                scrollbars: false, // 隐藏滚动条
-              ),
-              child: TextField(
-                maxLines: null,
-                maxLength: _textMaxLength,
-                keyboardType: TextInputType.multiline,
-                controller: _textController,
-                style: _getTextStyle(),
-                strutStyle: StrutStyle.disabled,
-                decoration: InputDecoration.collapsed(
-                  hintText: '',
-                ),
-                // decoration: InputDecoration(
-                //   hintText: '',
-                //   hintStyle: TextStyle(color: Colors.grey),
-                //   border: InputBorder.none,
-                //   fillColor: Colors.blue,
-                //   isDense: true
-                // ),
-                autofocus: true,
-                scrollPhysics: NeverScrollableScrollPhysics(), // 禁止滚动
-                //scrollPadding: EdgeInsets.zero,
-              ),
-            ),
-          ),
-        ),
-        */
         // 绝对定位
         Positioned(
             left: _drawStartPoint.dx,
@@ -589,6 +545,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
               child: IntrinsicWidth(
                 child: MTextInput(
                   mkey: _textFieldKey,
+                  focusNode: _textFocus,
                   textController: _textController, 
                   textStyle: _getTextStyle(),
                 ),
@@ -909,15 +866,11 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
  // 绘图相关方法
   void _onPanStart(PointerDownEvent details) {
-
+    Offset lastStartPoint = _drawStartPoint;
     _drawStartPoint = details.localPosition;
 
     if (_selectedTool == 'text') 
     {
-      if( _showTextInput )
-      {
-        // create text node
-      }
       setState(() {
         if( _showTextInput )
         {
@@ -926,32 +879,38 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
             strokeWidth: strokeWidth,
             tool: _selectedTool,
             text: _textController.text,
+            textStyle: _getTextStyle(),
           ));
-        
+
+         lastStartPoint = lastStartPoint + Offset(5, 0);
+
           _paths.last.points.add(DrawingPoint(
-            offset: _drawStartPoint,
+            offset: lastStartPoint,
             color: _selectedColor,
             strokeWidth: strokeWidth,
             tool: _selectedTool,
           ));
 
-          Offset endpoint = _drawStartPoint;
+          Offset endpoint = lastStartPoint;
           Size size = _getTextFieldSize();
-          endpoint = Offset( _drawStartPoint.dx + size.width, _drawStartPoint.dy + size.height );
+          endpoint = Offset( lastStartPoint.dx + size.width, lastStartPoint.dy + size.height );
           _paths.last.points.add(DrawingPoint(
             offset: endpoint,
             color: _selectedColor,
             strokeWidth: strokeWidth,
             tool: _selectedTool,
           ));
-
         }
         _resetTextInput();
         isDrawing = true;
         _showTextInput = true;
         currentOffset = details.localPosition;
       });
-      return;
+      
+      if(_showTextInput)
+      {
+        _textFocus.requestFocus();
+      }
     }
 
     setState(() {
