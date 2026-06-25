@@ -92,7 +92,7 @@ class _TextInputState extends State<MTextInput> {
         decoration: const InputDecoration(
           hintText: "Enter text",
           border: OutlineInputBorder(),
-          contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+          contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 5),
           isDense: true,
           fillColor: Colors.transparent,
           filled: true,
@@ -100,3 +100,5 @@ class _TextInputState extends State<MTextInput> {
     );
   }
 }
+
+

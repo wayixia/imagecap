@@ -96,9 +96,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   Offset? currentOffset;
   late TextEditingController _textController;
   Offset? _textPosition;  //文本位置
-  Size _inputTextSize = Size(100, 30); // 文本输入框尺寸
+  Size _inputTextSize = Size(100, 16); // 文本输入框尺寸
   bool _showTextInput = false;
-  double _textMaxLength =100;
+  // double _textMaxLength =100;
   String _selectedTool = "";
   Offset _drawStartPoint = Offset.zero;
   final double _controlPointSize = 8.0;
@@ -106,8 +106,8 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
   final GlobalKey _textFieldKey = GlobalKey();
   final FocusNode _textFocus = FocusNode();
 
-    // 限制最大高度 自己修改
-  final double _maxInputHeight = 80;
+  //   // 限制最大高度 自己修改
+  // final double _maxInputHeight = 80;
   // 单行高度
   final double _lineHeight = 22;
   
@@ -122,6 +122,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
       color: _selectedColor,
       fontSize: _fontSize,
       height: _lineHeight/_fontSize, // 设置行高
+      letterSpacing: 0.5,
     );
   }
 
@@ -882,7 +883,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
             textStyle: _getTextStyle(),
           ));
 
-         lastStartPoint = lastStartPoint + Offset(5, 0);
+         lastStartPoint = lastStartPoint + Offset(0, 0);
 
           _paths.last.points.add(DrawingPoint(
             offset: lastStartPoint,
@@ -893,7 +894,9 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
 
           Offset endpoint = lastStartPoint;
           Size size = _getTextFieldSize();
+          
           endpoint = Offset( lastStartPoint.dx + size.width, lastStartPoint.dy + size.height );
+          //endpoint = endpoint - Offset(5, 5);
           _paths.last.points.add(DrawingPoint(
             offset: endpoint,
             color: _selectedColor,
@@ -1136,7 +1139,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     if( b > limitRect.bottom ) {
       if( ( rectTop + ( limitRect.bottom - b ) ) < limitRect.top ) {
         //_textController.SetLimitText( text.length-5 );
-        _textMaxLength = text.length - 5;
+        //_textMaxLength = text.length - 5;
       } else {
         rectTop = limitRect.bottom - b;
         rectBottom = limitRect.bottom;
@@ -1146,7 +1149,7 @@ class _ImageSelectionScreenState extends State<ImageSelectionScreen> {
     } else {
       rectBottom = b;
       //_textController.SetLimitText( -1 );
-      _textMaxLength = 100;
+      //_textMaxLength = 100;
       //debugPrint( "Set limit text -1" ); 
     }
 
